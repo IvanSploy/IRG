@@ -1,0 +1,7 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <engine:VisualElement name="Root" style="flex-grow: 1;">
+        <engine:TextField label="Old Name" placeholder-text="filler text" hide-placeholder-on-focus="true" name="OldName" />
+        <engine:TextField label="New Name" placeholder-text="filler text" hide-placeholder-on-focus="true" name="NewName" />
+        <engine:Button text="Apply" name="ApplyButton" />
+    </engine:VisualElement>
+</engine:UXML>

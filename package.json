@@ -1,0 +1,7 @@
+{
+  "name": "com.irg.utils",
+  "version": "1.0.0",
+  "displayName": "IRG Utils",
+  "description": "Utilidades para proyectos de Ivan Rodriguez Garcia.",
+  "unity": "6000.3.3"
+}
