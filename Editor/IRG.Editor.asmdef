@@ -1,6 +1,7 @@
 {
   "name": "IRG.Editor",
   "references": [
-    "IRG.Runtime"
+    "IRG.Runtime",
+    "Unity.Addressables.Editor"
   ]
 }

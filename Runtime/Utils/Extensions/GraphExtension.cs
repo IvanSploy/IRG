@@ -3,7 +3,7 @@ using UnityEditor.Experimental.GraphView;
 
 namespace IRG
 {
-    public static class NSUtils
+    public static class GraphExtension
     {
         public static List<Edge> GetConnectedEdges(this Node node)
         {

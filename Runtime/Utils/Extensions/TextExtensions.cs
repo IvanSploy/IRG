@@ -1,7 +1,14 @@
+using System.Text.RegularExpressions;
+
 namespace IRG
 {
     public static class TextExtensions
     {
+        public static string WithSpaces(this string str)
+        {
+            return Regex.Replace(str, "([a-z])([A-Z])", "$1 $2");
+        }
+        
         public static bool IsWhitespace(this char character)
         {
             switch (character)
