@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace IRG.Utils
+namespace IRG
 {  
  //Based on Ken Perlin's noise.
  public static class PerlinNoise3D
