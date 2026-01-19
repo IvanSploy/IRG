@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-namespace IRG.Utils.Editor
+namespace IRG.Editor
 {
     public class TypeSearchWindow : ScriptableObject, ISearchWindowProvider
     {

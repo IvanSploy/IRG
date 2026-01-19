@@ -1,6 +1,9 @@
 using UnityEngine;
 
-public abstract class FolderAttribute : PropertyAttribute
+namespace IRG
 {
-    public string[] Options;
+    public abstract class FolderAttribute : PropertyAttribute
+    {
+        public string[] Options;
+    }
 }

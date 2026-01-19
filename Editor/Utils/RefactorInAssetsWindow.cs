@@ -1,9 +1,8 @@
-using IRG.Utils.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace IRG.Cinematic.Editor
+namespace IRG.Editor
 {
     public class RefactorInAssetsWindow : EditorWindow
     {

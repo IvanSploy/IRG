@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace IRG.Utils.Editor
+namespace IRG.Editor
 {
     [CustomPropertyDrawer(typeof(FolderAttribute))]
     public class FolderAttributeDrawer : PropertyDrawer

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace IRG.Utils
+namespace IRG
 {
     public class AbstractReferenceAttribute : PropertyAttribute
     {

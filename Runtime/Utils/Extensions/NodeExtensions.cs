@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 
-namespace IRG.Utils
+namespace IRG
 {
     public static class NSUtils
     {

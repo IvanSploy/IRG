@@ -5,7 +5,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace IRG.Utils.Editor
+namespace IRG.Editor
 {
     [CustomPropertyDrawer(typeof(AbstractList<>), true)]
     public class AbstractListDrawer : PropertyDrawer

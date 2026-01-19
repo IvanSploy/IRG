@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace IRG.Utils
+namespace IRG
 {
     public static class CollectionExtensions
     {

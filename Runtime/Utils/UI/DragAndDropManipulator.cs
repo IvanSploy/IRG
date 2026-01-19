@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace IRG.Utils
+namespace IRG
 {
     public class DragAndDropManipulator : PointerManipulator
     {

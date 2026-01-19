@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace IRG.Utils
+namespace IRG
 {
     [Serializable]
     public class AbstractList<T> : IEnumerable<T>

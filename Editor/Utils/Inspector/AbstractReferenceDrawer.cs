@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-namespace IRG.Utils.Editor
+namespace IRG.Editor
 {
     [CustomPropertyDrawer(typeof(AbstractReferenceAttribute), true)]
     public class AbstractReferenceDrawer : PropertyDrawer

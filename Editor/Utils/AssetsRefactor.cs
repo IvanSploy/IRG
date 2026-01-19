@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 
-namespace IRG.Utils.Editor
+namespace IRG.Editor
 {
     public static class AssetsRefactor
     {

@@ -1,4 +1,4 @@
-namespace IRG.Utils
+namespace IRG
 {
     public static class TextExtensions
     {

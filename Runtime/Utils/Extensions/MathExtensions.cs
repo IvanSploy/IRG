@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace IRG.Utils
+namespace IRG
 {
     public static class MathExtensions
     {

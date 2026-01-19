@@ -1,6 +1,6 @@
 using System;
 
-namespace IRG.Utils
+namespace IRG
 {
     public class ReactiveProperty<T>
     {
