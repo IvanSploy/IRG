@@ -1,0 +1,6 @@
+{
+  "name": "IRG.Editor",
+  "references": [
+    "IRG.Runtime"
+  ]
+}

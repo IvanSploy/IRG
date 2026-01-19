@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using AYellowpaper.SerializedCollections;
 
 namespace IRG.Utils
 {
