@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace IRG.Editor
 {
-    [CustomPropertyDrawer(typeof(FolderAttribute))]
+    [CustomPropertyDrawer(typeof(FolderAttribute), true)]
     public class FolderAttributeDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

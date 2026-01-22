@@ -12,8 +12,6 @@ namespace IRG.Windows
         private readonly HashSet<string> _openedWindows = new();
 
         public event Action OnWindowsUpdated;
-
-        private static IWindow _example;
         
         public static bool AnyWindowOpened => Instance?._openedWindows.Count > 0;
 
@@ -37,15 +35,11 @@ namespace IRG.Windows
             CheckCursor();
         }
 
-        private void Update()
+        public void Toggle(string windowName)
         {
-            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.E))
-            {
-                var windowName = "Inventory";
-                var isOpen = _openedWindows.Contains(windowName);
-                if(isOpen) Close(windowName);
-                else Open(windowName);
-            }
+            var isOpen = _openedWindows.Contains(windowName);
+            if(isOpen) Close(windowName);
+            else Open(windowName);
         }
 
         public void Open(string windowName)
