@@ -11,41 +11,51 @@ namespace IRG.Target
         [SerializeField] private Color _defaultColor;
         [SerializeField] private Color _pressedColor;
 
-        private InputTarget _inputTarget;
         private TargetSelector _targetSelector;
         private Color _currentColor;
 
-        private Interactable _target;
+        private bool _isVisible;
 
         private void Awake()
         {
             if (!_image) _image = GetComponentInChildren<Image>();
             
             var player = GameObject.FindWithTag("Player");
-            _inputTarget = player.GetComponent<InputTarget>();
             _targetSelector = player.GetComponent<TargetSelector>();
 
-            if (_inputTarget) _inputTarget.IsPressed.Subscribe(OnPressed);
-            if (_targetSelector) _targetSelector.OnTargetSelected += OnTargetSelected;
+            _targetSelector.OnTargetSelected += OnTargetSelected;
+            _targetSelector.IsPressed.Subscribe(OnPressed);
             
             SetVisible(false);
         }
 
         private void OnDestroy()
         {
-            if (_inputTarget) _inputTarget.IsPressed.UnSubscribe(OnPressed);
-            if (_targetSelector) _targetSelector.OnTargetSelected -= OnTargetSelected;
+            if (_targetSelector)
+            {
+                _targetSelector.OnTargetSelected -= OnTargetSelected;
+                _targetSelector.IsPressed.UnSubscribe(OnPressed);
+            }
         }
 
         private void OnPressed(bool isPressed)
         {
-            _currentColor = isPressed ? _pressedColor : _defaultColor;
+            SetColor(isPressed ? _pressedColor : _defaultColor);
         }
 
         private void OnTargetSelected(Interactable target)
         {
-            _target = target;
-            SetVisible((bool)_target);
+            SetVisible((bool)target);
+        }
+        
+        public void SetColor(Color color)
+        {
+            color.a = 1f;
+            _currentColor = color;
+            if (_isVisible)
+            {
+                _image.color = color;
+            }
         }
 
         private void Update()
@@ -55,8 +65,9 @@ namespace IRG.Target
 
         private void SetVisible(bool visible)
         {
+            _isVisible = visible;
             Color color = _currentColor;
-            if (!visible)
+            if (!_isVisible)
             {
                 color.a = 0f;
                 _image.color = color;

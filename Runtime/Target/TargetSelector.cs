@@ -13,9 +13,10 @@ namespace IRG.Target
         public Interactable Selected { get; private set; }
         
         public event Action<Interactable> OnTargetSelected;
+        public readonly ReactiveProperty<bool> IsPressed = new();
 
         private Camera _camera;
-
+        
         private void Awake()
         {
             if(!_detector) _detector = GetComponentInChildren<TargetDetector>();
@@ -28,8 +29,20 @@ namespace IRG.Target
 
         private void Update()
         {
+            //TODO: Check when should disable
             if (!IsEnabled) return;
             SelectBestTarget();
+        }
+
+        public void StartTarget()
+        {
+            IsPressed.Value = (bool)Selected;
+        }
+
+        public void ConfirmTarget()
+        {
+            if (IsPressed.Value) Selected?.Interact();
+            IsPressed.Value = false;
         }
 
         protected override void OnSystemDisabled()
@@ -75,6 +88,8 @@ namespace IRG.Target
 
         private void SelectTarget(Interactable interactable)
         {
+            if(Selected == interactable) return;
+            IsPressed.Value = false;
             Selected = interactable;
             OnTargetSelected?.Invoke(Selected);
         }
