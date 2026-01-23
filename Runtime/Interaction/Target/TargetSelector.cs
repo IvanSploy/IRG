@@ -1,18 +1,28 @@
 using System;
 using UnityEngine;
-using IRG.Interaction;
 
-namespace IRG.Target
+namespace IRG.Interaction.Target
 {
-    public class TargetSelector : GameSystem
+    public class TargetSelector : MonoBehaviour
     {
         [SerializeField] private TargetDetector _detector;
         [SerializeField] private Transform _forwardTransform;
         [SerializeField] private LayerMask _excludeMask;
+
+        private Target _selected;
+        public Target Selected
+        {
+            get => _selected;
+            private set
+            {
+                if(_selected == value) return;
+                _selected = value;
+                IsPressed.Value = false;
+                OnTargetSelected?.Invoke(_selected);
+            }
+        }
         
-        public Interactable Selected { get; private set; }
-        
-        public event Action<Interactable> OnTargetSelected;
+        public event Action<Target> OnTargetSelected;
         public readonly ReactiveProperty<bool> IsPressed = new();
 
         private Camera _camera;
@@ -20,6 +30,11 @@ namespace IRG.Target
         private void Awake()
         {
             if(!_detector) _detector = GetComponentInChildren<TargetDetector>();
+        }
+        
+        private void OnDisable()
+        {
+            Selected = null;
         }
 
         private void Start()
@@ -29,8 +44,6 @@ namespace IRG.Target
 
         private void Update()
         {
-            //TODO: Check when should disable
-            if (!IsEnabled) return;
             SelectBestTarget();
         }
 
@@ -45,21 +58,16 @@ namespace IRG.Target
             IsPressed.Value = false;
         }
 
-        protected override void OnSystemDisabled()
-        {
-            if (Selected) SelectTarget(null);
-        }
-
         private void SelectBestTarget()
         {
             var target = GetBestTarget(_camera.transform.position, _camera.transform.forward);
             if(!target) target = GetBestTarget(transform.position, _forwardTransform.forward);
-            SelectTarget(target);
+            Selected = target;
         }
 
-        private Interactable GetBestTarget(Vector3 pos, Vector3 forward)
+        private Target GetBestTarget(Vector3 pos, Vector3 forward)
         {
-            Interactable bestInteractionTarget = null;
+            Target bestInteractionTarget = null;
             float max = float.MinValue;
             foreach (var target in _detector.Targets)
             {
@@ -84,14 +92,6 @@ namespace IRG.Target
             }
 
             return bestInteractionTarget;
-        }
-
-        private void SelectTarget(Interactable interactable)
-        {
-            if(Selected == interactable) return;
-            IsPressed.Value = false;
-            Selected = interactable;
-            OnTargetSelected?.Invoke(Selected);
         }
     }
 }

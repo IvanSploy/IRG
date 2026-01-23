@@ -4,16 +4,16 @@ using UnityEngine;
 
 namespace IRG.Interaction
 {
-    public class Interactable : MonoBehaviour
+    public abstract class Interactable : MonoBehaviour
     {
         private readonly List<IInteractable> _interactableList = new();
+        
+        public bool IsInteractable => _interactableList.Any(interactable => interactable.IsInteractable);
 
         private void Awake()
         {
             _interactableList.AddRange(GetComponentsInChildren<IInteractable>());
         }
-
-        public bool IsInteractable => _interactableList.Any(interactable => interactable.IsInteractable);
         
         public void Interact()
         {

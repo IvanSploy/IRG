@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using IRG.Interaction;
 
-namespace IRG.Target
+namespace IRG.Interaction.Target
 {
     public class TargetRenderer : MonoBehaviour
     {
@@ -43,7 +42,7 @@ namespace IRG.Target
             SetColor(isPressed ? _pressedColor : _defaultColor);
         }
 
-        private void OnTargetSelected(Interactable target)
+        private void OnTargetSelected(Target target)
         {
             SetVisible((bool)target);
         }
