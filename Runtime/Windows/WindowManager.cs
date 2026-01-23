@@ -74,8 +74,8 @@ namespace IRG.Windows
         
         private void CheckCursor()
         {
-            if (_openedWindows.Count == 0) CursorManager.Lock();
-            else CursorManager.Release();
+            if (_openedWindows.Count == 0) CursorManager.Unlock("Windows");
+            else CursorManager.Lock("Windows");
         }
     }
 }

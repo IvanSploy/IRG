@@ -1,15 +1,13 @@
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace IRG
 {
-    public class InputManager : GameSystem
+    public class InputManager : MonoBehaviour
     {
         public static InputManager Instance;
 
         public InputActionAsset InputActionsAsset;
-
-        public static InputActionMap PlayerMap;
-        public static InputActionMap UIMap;
         
         private void Awake()
         {
@@ -22,22 +20,8 @@ namespace IRG
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            PlayerMap = InputActionsAsset.FindActionMap("Player");
-            UIMap = InputActionsAsset.FindActionMap("UI");
+            if (InputActionsAsset == null) InputActionsAsset = InputSystem.actions;
         }
-        
-        protected override void OnSystemEnabled()
-        {
-            CursorManager.Lock();
-            PlayerMap.Enable();
-        }
-
-        protected override void OnSystemDisabled()
-        {
-            CursorManager.Release();
-            PlayerMap.Disable();
-        }
-
         public void OnEnable()
         {
             InputActionsAsset.Enable();
