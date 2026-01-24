@@ -1,6 +1,6 @@
 namespace IRG.Interaction.Target
 {
-    public class Target : Interactable
+    public class Target : Interactor
     {
         
     }

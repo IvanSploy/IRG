@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace IRG.Interaction
 {
-    public abstract class Interactable : MonoBehaviour
+    public abstract class Interactor : MonoBehaviour
     {
         private readonly List<IInteractable> _interactableList = new();
         

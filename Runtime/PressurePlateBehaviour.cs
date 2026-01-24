@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace IRG
 {
-    public class PressurePlateBehaviour : Interactable
+    public class PressurePlateBehaviour : Interactor
     {
         [SerializeField] private Transform _mesh;
 

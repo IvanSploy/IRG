@@ -56,7 +56,11 @@ namespace IRG
         {
         }
 
-        public List<TData> GetAll() => _data.ToList();
+        public List<TData> GetAll()
+        {
+            Load();
+            return _data.ToList();
+        }
 
         protected virtual string Serialize()
         {
