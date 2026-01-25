@@ -1,7 +1,19 @@
 <engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <engine:VisualElement name="Root" style="flex-grow: 1;">
-        <engine:TextField label="Old Name" placeholder-text="filler text" hide-placeholder-on-focus="true" name="OldName" />
-        <engine:TextField label="New Name" placeholder-text="filler text" hide-placeholder-on-focus="true" name="NewName" />
-        <engine:Button text="Apply" name="ApplyButton" />
+    <engine:VisualElement name="Root" style="flex-grow: 1; flex-direction: column;">
+        <engine:VisualElement style="flex-direction: row;">
+            <engine:VisualElement name="OldContainer" style="flex-grow: 1; padding-right: 5px;">
+                <engine:Label text="Old Asset" style="-unity-font-style: bold; -unity-text-align: upper-center;"/>
+                <engine:TextField label="Name" placeholder-text="filler text" hide-placeholder-on-focus="true" name="Name"/>
+                <engine:TextField label="NameSpace" placeholder-text="filler text" hide-placeholder-on-focus="true" name="NameSpace"/>
+                <engine:TextField label="Assembly" placeholder-text="filler text" hide-placeholder-on-focus="true" name="Assembly"/>
+            </engine:VisualElement>
+            <engine:VisualElement name="NewContainer" style="flex-grow: 1; padding-left: 5px;">
+                <engine:Label text="New Asset" style="-unity-font-style: bold; -unity-text-align: upper-center;"/>
+                <engine:TextField label="Name" placeholder-text="filler text" hide-placeholder-on-focus="true" name="Name"/>
+                <engine:TextField label="NameSpace" placeholder-text="filler text" hide-placeholder-on-focus="true" name="NameSpace"/>
+                <engine:TextField label="Assembly" placeholder-text="filler text" hide-placeholder-on-focus="true" name="Assembly"/>
+            </engine:VisualElement>
+        </engine:VisualElement>
+        <engine:Button text="Apply" name="ApplyButton"/>
     </engine:VisualElement>
 </engine:UXML>

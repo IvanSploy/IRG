@@ -9,8 +9,34 @@ namespace IRG.Editor
         [SerializeField] private VisualTreeAsset _visualTreeAsset;
         
         private VisualElement _root;
-        private TextField _oldName;
-        private TextField _newName;
+
+        private class AssetInfoView
+        {
+            public VisualElement Root;
+            public TextField Name;
+            public TextField NameSpace;
+            public TextField Assembly;
+
+            public AssetInfoView(VisualElement root)
+            {
+                Root = root;
+                Name = Root.Q<TextField>("Name");
+                NameSpace = Root.Q<TextField>("NameSpace");
+                Assembly = Root.Q<TextField>("Assembly");
+            }
+
+            public AssetsRefactor.AssetInfo GetInfo()
+            {
+                return new AssetsRefactor.AssetInfo
+                {
+                    Name = Name.text,
+                    NameSpace = NameSpace.text,
+                    Assembly = Assembly.text
+                };
+            }
+        }
+        private AssetInfoView _oldInfoView;
+        private AssetInfoView _newInfoView;
         private Button _applyButton;
 
         [MenuItem("IRG Debug/Refactor Assets")]
@@ -28,19 +54,15 @@ namespace IRG.Editor
             // Instantiate UXML
             _root = _visualTreeAsset.CloneTree().ElementAt(0);
             root.Add(_root);
+
+            _oldInfoView = new AssetInfoView(_root.Q("OldContainer"));
+            _newInfoView = new AssetInfoView(_root.Q("NewContainer"));
             
-            //Get UXML
-            _oldName = _root.Q<TextField>("OldName");
-            _newName = _root.Q<TextField>("NewName");
             _applyButton = _root.Q<Button>("ApplyButton");
 
             _applyButton.clicked += () =>
             {
-                if (string.IsNullOrEmpty(_oldName.text) || string.IsNullOrEmpty(_newName.text)) return;
-                if (_oldName.text == _newName.text) return;
-                AssetsRefactor.ReplaceInAssets(_oldName.text, _newName.text);
-                _oldName.SetValueWithoutNotify("");
-                _newName.SetValueWithoutNotify("");
+                AssetsRefactor.ReplaceInAssets(_oldInfoView.GetInfo(), _newInfoView.GetInfo());
             };
         }
     } 
