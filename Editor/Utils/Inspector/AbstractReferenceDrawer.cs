@@ -31,7 +31,7 @@ namespace IRG.Editor
                         var mousePosition = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
                         SearchWindowContext context = new SearchWindowContext(mousePosition);
                         var searchWindow = ScriptableObject.CreateInstance<TypeSearchWindow>();
-                        searchWindow.Init(fieldType, type =>
+                        searchWindow.Init(fieldType, (type, ctx) =>
                         {
                             if (type == null)
                             {

@@ -10,17 +10,22 @@ namespace IRG.Editor
     public class TypeSearchWindow : ScriptableObject, ISearchWindowProvider
     {
         public Type Type;
-        public Action<Type> OnSelect;
+        public Action<Type, SearchWindowContext> OnSelect;
         public bool AllowNone;
+        protected Texture2D _indentIcon;
 
-        public void Init(Type type, Action<Type> onSelect, bool allowNone = false)
+        public void Init(Type type, Action<Type, SearchWindowContext> onSelect, bool allowNone = false)
         {
             Type = type;
             OnSelect = onSelect;
             AllowNone = allowNone;
+            
+            _indentIcon = new Texture2D(1, 1);
+            _indentIcon.SetPixel(0,0, Color.clear);
+            _indentIcon.Apply();
         }
         
-        public List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
+        public virtual List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
         {
             var typeName = Type.Name.WithSpaces();
             var entries = new List<SearchTreeEntry>
@@ -75,7 +80,7 @@ namespace IRG.Editor
             {
                 if (type.IsAbstract)
                 {
-                    entries.Add(new SearchTreeGroupEntry(new GUIContent($"{type.Name.WithSpaces()}"))
+                    entries.Add(new SearchTreeGroupEntry(new GUIContent($"{type.Name.WithSpaces()}", _indentIcon))
                     {
                         userData = type,
                         level = level
@@ -98,13 +103,13 @@ namespace IRG.Editor
         {
             if (searchTreeEntry.userData == null)
             {
-                OnSelect?.Invoke(null);
+                OnSelect?.Invoke(null, context);
                 return true;
             }
             
             if (searchTreeEntry.userData is Type type)
             {
-                OnSelect?.Invoke(type);
+                OnSelect?.Invoke(type, context);
                 return true;
             }
             

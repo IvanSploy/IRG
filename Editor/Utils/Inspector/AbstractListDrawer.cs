@@ -32,7 +32,7 @@ namespace IRG.Editor
 
             if (listProperty == null)
             {
-                EditorGUI.LabelField(position, label.text, "Make sure T is Serializable.");
+                EditorGUI.LabelField(position, label.text, $"Make sure {itemType.FullName} is Serializable.");
                 return;
             }
             
@@ -67,7 +67,7 @@ namespace IRG.Editor
                     var mousePosition = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
                     SearchWindowContext context = new SearchWindowContext(mousePosition);
                     var searchWindow = ScriptableObject.CreateInstance<TypeSearchWindow>();
-                    searchWindow.Init(itemType, type =>
+                    searchWindow.Init(itemType, (type, ctx) =>
                     {
                         var instance = Activator.CreateInstance(type);
 
