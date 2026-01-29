@@ -27,11 +27,11 @@ namespace IRG
                 if (attr != null)
                 {
                     if (!_map.TryAdd(attr.Name, type))
-                        throw new Exception($"Duplicated attribute key '{attr.Name}' for type {type.FullName}");
+                        throw new Exception($"Duplicated attribute key '{attr.Name}' for type {type.Name}");
                 }
                 
                 if (!_map.TryAdd(type.Name, type))
-                    throw new Exception($"Duplicated class key '{type.Name}' for type {type.FullName}");
+                    throw new Exception($"Duplicated class key '{type.Name}'");
             }
         }
 

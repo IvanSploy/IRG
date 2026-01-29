@@ -5,25 +5,33 @@ namespace IRG
 {
     public class PressurePlateBehaviour : Interactor
     {
+        [SerializeField] private string _tag;
         [SerializeField] private Transform _mesh;
 
         private int _count;
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.isTrigger) return;
+            if (!IsValid(other)) return;
             if(_count == 0) Press();
             _count++;
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.isTrigger) return;
+            if (!IsValid(other)) return;
             _count--;
             if (_count == 0) UnPress();
         }
+        
+        private bool IsValid(Collider other)
+        {
+            if (other.isTrigger) return false;
+            if (!string.IsNullOrEmpty(_tag) && !other.CompareTag(_tag)) return false;
+            return true;
+        }
 
-        public void Press()
+        private void Press()
         {
             var position = _mesh.position;
             position.y -= 0.045f;
@@ -36,7 +44,7 @@ namespace IRG
             Interact();
         }
 
-        public void UnPress()
+        private void UnPress()
         {
             var position = _mesh.position;
             position.y += 0.045f;

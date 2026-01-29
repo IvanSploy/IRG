@@ -9,8 +9,8 @@ namespace IRG
 {
     public static class JsonDataAccess<TData>
     {
-        private const string Path = "Content/";
-        private static string GetFullPath(string fileName) => $"{Application.dataPath}/{Path}/{fileName}.json";
+        private const string Folder = "Content";
+        private static string GetFullPath(string fileName) => $"{Application.dataPath}/{Folder}/{fileName}.json";
         
         public static readonly List<TData> Data = new();
         

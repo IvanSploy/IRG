@@ -1,6 +1,6 @@
 namespace IRG
 {
-    public class Signal
+    public struct Signal
     {
         public string Name;
         public object Data;

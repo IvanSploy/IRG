@@ -5,10 +5,8 @@ using UnityEngine;
 
 namespace IRG.Graphs
 {
-    public class GraphDirector : MonoBehaviour
+    public abstract class GraphDirector : MonoBehaviour
     {
-        public static int ActiveCount;
-        
         private InitialNodeAction _initialNode;
         private readonly Dictionary<string, NodeAction> _nodes = new();
         private readonly List<Coroutine> _threads = new();
@@ -24,21 +22,6 @@ namespace IRG.Graphs
             RePlay();
         }
         
-        public void RePlay()
-        {
-            Stop();
-            Initialize();
-            if(_initialNode == null) return;
-
-            ActiveCount++;
-            _threads.Clear();
-            _finishedThreads = 0;
-            foreach (var node in _initialNode.GetNextNodes())
-            {
-                _threads.Add(StartCoroutine(PlayThread(node)));
-            }
-        }
-        
         public void Stop()
         {
             if (_finishedThreads == _threads.Count) return;
@@ -48,8 +31,21 @@ namespace IRG.Graphs
                 StopCoroutine(thread);
             }
 
-            ActiveCount--;
             _finishedThreads = _threads.Count;
+        }
+        
+        public void RePlay()
+        {
+            Stop();
+            Initialize();
+            if(_initialNode == null) return;
+
+            _threads.Clear();
+            _finishedThreads = 0;
+            foreach (var node in _initialNode.GetNextNodes())
+            {
+                _threads.Add(StartCoroutine(PlayThread(node)));
+            }
         }
         
         private IEnumerator PlayThread(NodeAction initialNode)
@@ -77,7 +73,6 @@ namespace IRG.Graphs
             }
 
             _finishedThreads++;
-            if(_threads.Count == _finishedThreads) ActiveCount--;
         }
 
         private void CreateNodes()

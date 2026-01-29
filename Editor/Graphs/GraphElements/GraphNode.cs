@@ -50,8 +50,12 @@ namespace IRG.Graphs.Editor
         {
             ID = string.IsNullOrEmpty(id) ? Guid.NewGuid().ToString() : id;
             SetPosition(new Rect(pos, Vector2.zero));
+            style.minWidth = 150;
+            style.maxWidth = 300;
+            OnInit();
         }
         
+        protected virtual void OnInit(){}
         protected virtual void OnLoad(){}
         protected virtual void OnSave(){}
 

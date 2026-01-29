@@ -39,7 +39,7 @@ namespace IRG.Editor
         private AssetInfoView _newInfoView;
         private Button _applyButton;
 
-        [MenuItem("IRG Debug/Refactor Assets")]
+        [MenuItem("IRG/Debug/Refactor Assets", priority = 10)]
         public static void CreateWindow()
         {
             var wnd = GetWindow<RefactorInAssetsWindow>();

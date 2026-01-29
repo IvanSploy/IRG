@@ -51,7 +51,7 @@ namespace IRG.Windows
                 window.Open();
             }
 
-            RefreshWindows();
+            Refresh();
         }
         
         public void Close(string windowName)
@@ -63,10 +63,10 @@ namespace IRG.Windows
                 window.Close();
             }
 
-            RefreshWindows();
+            Refresh();
         }
 
-        public void RefreshWindows()
+        public void Refresh()
         {
             CheckCursor();
             OnWindowsUpdated?.Invoke();

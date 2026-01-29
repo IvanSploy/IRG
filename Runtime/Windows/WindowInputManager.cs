@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace IRG.Windows
 {
-    public class WindowsInputManager : MonoBehaviour
+    public class WindowInputManager : MonoBehaviour
     {
         public enum InputType
         {

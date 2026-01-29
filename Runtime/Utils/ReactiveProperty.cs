@@ -18,7 +18,7 @@ namespace IRG
             }
         }
         
-        public delegate void ValueChange( T previousValue, T newValue);
+        public delegate void ValueChange(T previousValue, T newValue);
         private event Action<T> NotifyEvent;
         private event ValueChange NotifyPairEvent;
 
@@ -29,16 +29,18 @@ namespace IRG
             Value = initialValue;
         }
 
-        public void Subscribe(Action<T> action)
+        public IDisposable Subscribe(Action<T> action)
         {
             NotifyEvent += action;
             action?.Invoke(_value);
+            return new ActionDisposable(() => UnSubscribe(action));
         }
         
-        public void Subscribe(ValueChange action)
+        public IDisposable Subscribe(ValueChange action)
         {
             NotifyPairEvent += action;
             action?.Invoke(default, _value);
+            return new ActionDisposable(() => UnSubscribe(action));
         }
         
         public void UnSubscribe(Action<T> action)

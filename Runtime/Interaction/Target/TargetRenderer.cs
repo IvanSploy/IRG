@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace IRG.Interaction.Target
 {
-    public class TargetRenderer : MonoBehaviour
+    public class TargetRenderer : View
     {
         [SerializeField] private Vector3 _offset;
         [SerializeField] private Image _image;
@@ -23,7 +23,7 @@ namespace IRG.Interaction.Target
             _targetSelector = player.GetComponent<TargetSelector>();
 
             _targetSelector.OnTargetSelected += OnTargetSelected;
-            _targetSelector.IsPressed.Subscribe(OnPressed);
+            _targetSelector.IsPressed.Subscribe(OnPressed).AddTo(_disposables);
             
             SetVisible(false);
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace IRG
@@ -56,17 +57,33 @@ namespace IRG
             }
         }
         
-        public static void AddToDictionary<TKey, TValue>(this Dictionary<TKey, HashSet<TValue>> dictionary, TKey key,
+        public static void Push<TKey, TValue>(this Dictionary<TKey, Stack<TValue>> dictionary, TKey key,
             TValue value)
         {
-            if (dictionary.TryGetValue(key, out var set))
+            if (dictionary.TryGetValue(key, out var stack))
             {
-                set.Add(value);
+                stack.Push(value);
             }
             else
             {
-                dictionary[key] = new HashSet<TValue> { value };
+                dictionary[key] = new Stack<TValue>();
+                dictionary[key].Push(value);
             }
+        }
+
+        public static TValue Pop<TKey, TValue>(this Dictionary<TKey, Stack<TValue>> dictionary, TKey key)
+        {
+            TValue value = default;
+            if (dictionary.TryGetValue(key, out var stack))
+            {
+                value = stack.Pop();
+                if (stack.Count == 0)
+                {
+                    dictionary.Remove(key);
+                }
+            }
+
+            return value;
         }
         
         public static void AddRange<TValue>(this HashSet<TValue> set, IEnumerable<TValue> values)
@@ -75,6 +92,11 @@ namespace IRG
             {
                 set.Add(value);
             }
+        }
+        
+        public static void AddTo(this IDisposable disposable, ICollection<IDisposable> disposables)
+        {
+            disposables.Add(disposable);
         }
     }
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 namespace IRG
@@ -41,12 +40,12 @@ namespace IRG
             {
                 _so = ScriptableObject.CreateInstance<TScriptableObject>();
 #if UNITY_EDITOR
-                AssetDatabase.CreateAsset(_so, GetFullPath(FileName));
+                UnityEditor.AssetDatabase.CreateAsset(_so, GetFullPath(FileName));
 #endif
             }
 #if UNITY_EDITOR
-            EditorUtility.SetDirty(_so);
-            AssetDatabase.SaveAssets();
+            UnityEditor.EditorUtility.SetDirty(_so);
+            UnityEditor.AssetDatabase.SaveAssets();
 #endif
         }
         
@@ -59,7 +58,7 @@ namespace IRG
         
         public TData Get(int index)
         {
-            return Get(index);
+            return _so.Data[index];
         }
         
         public List<TData> GetAll()
