@@ -1,17 +1,15 @@
-using System;
-
 namespace IRG
 {
-    public abstract class View<TViewModel> : View where TViewModel : ViewModel
+    public abstract class View<TViewModel> : View where TViewModel : ViewModel, new()
     {
         private static int _viewCount;
-        protected TViewModel _viewModel;
+        protected static TViewModel _viewModel;
 
         public void OnEnable()
         {
             _viewCount++;
             OnEnableUI();
-            _viewModel ??= Activator.CreateInstance<TViewModel>();
+            _viewModel ??= new TViewModel();
             OnViewModelSet();
         }
         

@@ -15,12 +15,16 @@ namespace IRG.Interaction
             _interactableList.AddRange(GetComponentsInChildren<IInteractable>());
         }
         
-        public void Interact()
+        public bool Interact()
         {
+            bool interacted = false;
             foreach (var interactable in _interactableList)
             {
-                if(interactable.IsInteractable) interactable.Interact();
+                if (!interactable.IsInteractable) continue;
+                interactable.Interact();
+                interacted = true;
             }
+            return interacted;
         }
     }
 }

@@ -69,7 +69,7 @@ namespace IRG
             }
             catch(Exception e)
             {
-                Debug.LogException(e);
+                EasyDebug.LogException(e);
             }
         }
     }
