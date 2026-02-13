@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace IRG
 {
@@ -43,6 +44,7 @@ namespace IRG
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            Mouse.current.WarpCursorPosition(new Vector2(Screen.width / 2f, Screen.height / 2f));
         }
 
         private static void ReleaseMouse()
