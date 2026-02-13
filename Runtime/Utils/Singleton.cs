@@ -14,6 +14,19 @@ namespace IRG
                 return _instance;
             }
         }
+        
+        public static TSingleton Data
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new TSingleton();
+                    _instance.Load();
+                }
+                return _instance;
+            }
+        }
     }
 
     public abstract class Singleton

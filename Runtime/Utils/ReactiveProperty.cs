@@ -9,7 +9,7 @@ namespace IRG
             get => _value;
             set
             {
-                if (_value.Equals(value)) return;
+                if (_value?.Equals(value) ?? false) return;
                 
                 var previous = _value;
                 _value = value;
