@@ -9,11 +9,13 @@ namespace IRG.Windows
         public static WindowManager Instance;
         
         private readonly Dictionary<string, List<IWindow>> _windows = new();
-        private readonly HashSet<string> _openedWindows = new();
+        private readonly HashSet<string> _currentWindows = new();
+        public HashSet<string> CurrentWindows => _currentWindows;
 
-        public event Action OnWindowsUpdated;
-        
-        public static bool AnyWindowOpened => Instance?._openedWindows.Count > 0;
+        public event Action<string> OnWindowOpen;
+        public event Action<string> OnWindowClosed;
+
+        public bool Locked;
 
         private void Awake()
         {
@@ -29,15 +31,13 @@ namespace IRG.Windows
             foreach (var window in windows)
             {
                 _windows.AddToList(window.Name, window);
-                if (window.IsOpen) _openedWindows.Add(window.Name);
+                if (window.IsOpen) _currentWindows.Add(window.Name);
             }
-
-            CheckCursor();
         }
 
         public void Toggle(string windowName)
         {
-            var isOpen = _openedWindows.Contains(windowName);
+            var isOpen = _currentWindows.Contains(windowName);
             if(isOpen) Close(windowName);
             else Open(windowName);
         }
@@ -45,37 +45,37 @@ namespace IRG.Windows
         public void Open(string windowName)
         {
             if (!_windows.TryGetValue(windowName, out var windows)) return;
-            if (!_openedWindows.Add(windowName)) return;
+            if (!_currentWindows.Add(windowName)) return;
             foreach (var window in windows)
             {
                 window.Open();
             }
-
-            Refresh();
+            OnWindowOpen?.Invoke(windowName);
         }
         
         public void Close(string windowName)
         {
             if (!_windows.TryGetValue(windowName, out var windows)) return;
-            if (!_openedWindows.Remove(windowName)) return;
+            if (!_currentWindows.Remove(windowName)) return;
             foreach (var window in windows)
             {
                 window.Close();
             }
-
-            Refresh();
-        }
-
-        public void Refresh()
-        {
-            CheckCursor();
-            OnWindowsUpdated?.Invoke();
+            OnWindowClosed?.Invoke(windowName);
         }
         
-        private void CheckCursor()
+        public void Lock()
         {
-            if (_openedWindows.Count == 0) CursorManager.Unlock("Windows");
-            else CursorManager.Lock("Windows");
+            Locked = true;
+            if (Locked) CursorManager.Lock("Windows");
+            else CursorManager.Unlock("Windows");
+        }
+        
+        public void UnLock()
+        {
+            Locked = false;
+            if (Locked) CursorManager.Lock("Windows");
+            else CursorManager.Unlock("Windows");
         }
     }
 }
