@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace IRG
 {  
@@ -40,9 +41,9 @@ namespace IRG
 
   public static double Get(float x, float y, float z)
   {
-   int x0 = (int)x;
-   int y0 = (int)y;
-   int z0 = (int)z;
+   int x0 = Mathf.FloorToInt(x);
+   int y0 = Mathf.FloorToInt(y);
+   int z0 = Mathf.FloorToInt(z);
 
    //Get distance vectors to each coord.
    double dx0 = x - x0;
