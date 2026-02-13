@@ -28,6 +28,7 @@ namespace IRG.Editor
         public virtual List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
         {
             var typeName = Type.Name.WithSpaces();
+            typeName = typeName.Replace("I ", "");
             var entries = new List<SearchTreeEntry>
             {
                 new SearchTreeGroupEntry(new GUIContent($"{typeName}")),

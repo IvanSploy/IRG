@@ -69,12 +69,15 @@ namespace IRG.Editor
                     var searchWindow = ScriptableObject.CreateInstance<TypeSearchWindow>();
                     searchWindow.Init(itemType, (type, ctx) =>
                     {
-                        var instance = Activator.CreateInstance(type);
+                        if (type.GetConstructor(Type.EmptyTypes) == null)
+                        {
+                            Debug.LogError($"[AbstractList] Make sure the class {type.Name} has an empty constructor.");
+                            return;
+                        }
 
+                        var instance = Activator.CreateInstance(type);
                         listProperty.InsertArrayElementAtIndex(listProperty.arraySize);
-                        listProperty.GetArrayElementAtIndex(listProperty.arraySize - 1)
-                                .managedReferenceValue =
-                            instance;
+                        listProperty.GetArrayElementAtIndex(listProperty.arraySize - 1).managedReferenceValue = instance;
                         listProperty.serializedObject.ApplyModifiedProperties();
                     });
                     SearchWindow.Open(context, searchWindow);
