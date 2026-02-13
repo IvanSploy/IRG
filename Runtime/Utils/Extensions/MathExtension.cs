@@ -87,5 +87,10 @@ namespace IRG
         {
             return new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
         }
+
+        public static Vector3Int Sign(this Vector3Int v)
+        {
+            return new Vector3Int(v.x > 0 ? 1 : -1, v.y > 0 ? 1 : -1, v.z > 0 ? 1 : -1);
+        }
     }
 }

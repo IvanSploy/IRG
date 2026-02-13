@@ -6,6 +6,11 @@ namespace IRG
     {
         public static string WithSpaces(this string str)
         {
+            return Regex.Replace(str, "([a-z]|[A-Z])([A-Z])", "$1 $2");
+        }
+        
+        public static string WithSpacesUnderscore(this string str)
+        {
             return Regex.Replace(str, "([a-z])([A-Z])", "$1 $2");
         }
         
