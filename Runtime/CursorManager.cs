@@ -34,17 +34,17 @@ namespace IRG
             if (Locks.Add(name) && Locks.Count == 1) ReleaseMouse();
         }
 
-        public static void Unlock(string name)
+        public static void Unlock(string name, bool centerMouse = false)
         {
             Locks.Remove(name);
-            if(Locks.Count == 0) LockMouse();
+            if(Locks.Count == 0) LockMouse(centerMouse);
         }
 
-        private static void LockMouse()
+        private static void LockMouse(bool centerMouse = false)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            Mouse.current.WarpCursorPosition(new Vector2(Screen.width / 2f, Screen.height / 2f));
+            if(centerMouse) Mouse.current.WarpCursorPosition(new Vector2(Screen.width / 2f, Screen.height / 2f));
         }
 
         private static void ReleaseMouse()

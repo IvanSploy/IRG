@@ -75,7 +75,7 @@ namespace IRG.Windows
         {
             Locked = false;
             if (Locked) CursorManager.Lock("Windows");
-            else CursorManager.Unlock("Windows");
+            else CursorManager.Unlock("Windows", true);
         }
     }
 }

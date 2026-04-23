@@ -13,7 +13,7 @@ namespace IRG
         private void OnTriggerEnter(Collider other)
         {
             if (!IsValid(other)) return;
-            if(_count == 0) Press();
+            if(_count == 0) Press(other.gameObject);
             _count++;
         }
 
@@ -31,7 +31,7 @@ namespace IRG
             return true;
         }
 
-        private void Press()
+        private void Press(GameObject interactor)
         {
             var position = _mesh.position;
             position.y -= 0.045f;
@@ -41,7 +41,7 @@ namespace IRG
             scale.y = 0.01f;
             _mesh.localScale = scale;
             
-            Interact();
+            Interact(interactor);
         }
 
         private void UnPress()

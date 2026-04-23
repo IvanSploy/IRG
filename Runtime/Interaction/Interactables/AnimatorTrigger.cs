@@ -15,7 +15,7 @@ namespace IRG.Interaction
             _animator = GetComponent<Animator>();
         }
         
-        public void Interact()
+        public void Interact(GameObject interactor)
         {
             _animator.SetTrigger(_triggerName);
         }

@@ -15,7 +15,7 @@ namespace IRG
             if(!IsValid(other)) return;
             _count++;
             if (_active) return;
-            Interact();
+            Interact(other.gameObject);
             _active = true;
         }
 

@@ -54,7 +54,7 @@ namespace IRG.Interaction.Target
 
         public void ConfirmTarget()
         {
-            if (IsPressed.Value) Selected?.Interact();
+            if (IsPressed.Value) Selected?.Interact(gameObject);
             IsPressed.Value = false;
         }
 

@@ -4,6 +4,12 @@ namespace IRG
 {
     public static class TextExtensions
     {
+        public static string ToSnakeCase(this string input)
+        {
+            return Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1_$2")
+                .ToLower();
+        }
+        
         public static string WithSpaces(this string str)
         {
             return Regex.Replace(str, "([a-z]|[A-Z])([A-Z])", "$1 $2");

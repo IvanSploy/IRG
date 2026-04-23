@@ -15,13 +15,13 @@ namespace IRG.Interaction
             _interactableList.AddRange(GetComponentsInChildren<IInteractable>());
         }
         
-        public bool Interact()
+        public bool Interact(GameObject interactor)
         {
             bool interacted = false;
             foreach (var interactable in _interactableList)
             {
                 if (!interactable.IsInteractable) continue;
-                interactable.Interact();
+                interactable.Interact(interactor);
                 interacted = true;
             }
             return interacted;

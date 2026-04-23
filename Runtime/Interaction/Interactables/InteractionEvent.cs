@@ -8,7 +8,7 @@ namespace IRG.Interaction
         [field:SerializeField] public bool IsInteractable { get; set; } = true;
         public UnityEvent OnInteracted;
         
-        public void Interact()
+        public void Interact(GameObject interactor)
         {
             OnInteracted?.Invoke();
         }
