@@ -8,7 +8,7 @@ namespace IRG.Interaction
     {
         private readonly List<IInteractable> _interactableList = new();
         
-        public bool IsInteractable => _interactableList.Any(interactable => interactable.IsInteractable);
+        public bool IsInteractable => enabled && _interactableList.Any(interactable => interactable.IsInteractable);
 
         private void Awake()
         {
