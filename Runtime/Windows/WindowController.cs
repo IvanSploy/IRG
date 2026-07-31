@@ -26,15 +26,6 @@ namespace IRG.Windows
                     }
                 }
             };
-
-            WindowManager.Instance.OnWindowOpen += _ => Refresh();
-            WindowManager.Instance.OnWindowClosed += _ => Refresh();
-        }
-
-        private void Refresh()
-        {
-            if (WindowManager.Instance.CurrentLevel > _freeLevel) WindowManager.Instance.Lock();
-            else WindowManager.Instance.UnLock();
         }
     }
 }

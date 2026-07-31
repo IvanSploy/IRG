@@ -89,8 +89,8 @@ namespace IRG.Windows
             if (!_allWindows.TryGetValue(windowName, out var window)) return;
             if (!AddWindow(windowName)) return;
             window.Open();
+            Refresh();
             OnWindowOpen?.Invoke(windowName);
-            RefreshVisibility();
         }
         
         public void Close(string windowName)
@@ -98,8 +98,8 @@ namespace IRG.Windows
             if (!_allWindows.TryGetValue(windowName, out var window)) return;
             if (!RemoveWindow(windowName)) return;
             window.Close();
+            Refresh();
             OnWindowClosed?.Invoke(windowName);
-            RefreshVisibility();
         }
         
         public void CloseCurrentLevel()
@@ -166,8 +166,11 @@ namespace IRG.Windows
             return true;
         }
 
-        public void RefreshVisibility()
+        public void Refresh()
         {
+            if (CurrentLevel > 0) Lock();
+            else UnLock();
+            
             if (!ShowOnlyCurrentLevel) return;
 
             for (var level = 0; level < _currentWindows.Count; level++)
