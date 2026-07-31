@@ -5,32 +5,31 @@ namespace IRG.Windows
 {
     public class WindowDocument : MonoBehaviour, IWindow
     {
-        [SerializeField] private bool _startOpened;
+        [field:SerializeField] public bool IsOpen { get; private set; }
         [SerializeField] private string _name;
+        [field:SerializeField] public int Level { get; private set; }
         public UIDocument Document;
 
         private VisualElement _root;
 
         public string Name => _name;
-        public bool IsOpen { get; private set; }
 
         private void Awake()
         {
-            IsOpen = _startOpened;
             _root = Document.rootVisualElement;
-            _root.SetDisplay(_startOpened);
+            _root.visible = IsOpen;
         }
 
         public void Open()
         {
             IsOpen = true;
-            _root.SetDisplay(true);
+            _root.visible = true;
         }
 
         public void Close()
         {
             IsOpen = false;
-            _root.SetDisplay(false);
+            _root.visible = false;
         }
     }
 }

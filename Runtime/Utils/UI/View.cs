@@ -31,8 +31,5 @@ namespace IRG
         protected virtual void OnAllViewsDestroyed() {}
     }
     
-    public abstract class View : Disposer
-    {
-        
-    }
+    public abstract class View : Disposer { }
 }
