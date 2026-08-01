@@ -17,19 +17,19 @@ namespace IRG.Windows
         private void Awake()
         {
             _root = Document.rootVisualElement;
-            _root.visible = IsOpen;
+            _root.SetDisplay(IsOpen);
         }
 
         public void Open()
         {
             IsOpen = true;
-            _root.visible = true;
+            _root.SetDisplay(true);
         }
 
         public void Close()
         {
             IsOpen = false;
-            _root.visible = false;
+            _root.SetDisplay(false);
         }
     }
 }
