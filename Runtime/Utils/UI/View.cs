@@ -7,7 +7,7 @@ namespace IRG
         private UIDocument _document;
         private PanelRenderer _panelRenderer;
 
-        protected VisualElement Root;
+        protected VisualElement _root { get; private set; }
 
         private new void Awake()
         {
@@ -16,7 +16,6 @@ namespace IRG
             _document = GetComponent<UIDocument>();
             OnAwake();
         }
-        protected virtual void OnAwake() { }
 
         protected new void OnEnable()
         {
@@ -43,12 +42,13 @@ namespace IRG
 
         private void OnUILoad(VisualElement root)
         {
-            Root = root;
+            _root = root;
             OnEnableUI();
             OnViewModelSet();
         }
         
         protected abstract void OnEnableUI();
+        protected abstract void OnViewModelSet();
     }
     
     public abstract class View<TViewModel> : View where TViewModel : ViewModel, new()
@@ -62,15 +62,15 @@ namespace IRG
             _viewId = _viewCount;
             _viewCount++;
             _viewModel ??= new TViewModel();
+            OnAwake();
         }
+        protected virtual void OnAwake() { }
 
         protected void OnEnable()
         {
-            OnViewModelSet();
             OnEnabled();
         }
-        protected abstract void OnViewModelSet();
-        protected virtual void OnEnabled() {}
+        protected virtual void OnEnabled() { }
         
         private void Update()
         {
