@@ -6,6 +6,7 @@ namespace IRG
     public class ReactiveDictionary<TKey, TValue>
     {
         private readonly Dictionary<TKey, TValue> _dictionary = new();
+        public IReadOnlyDictionary<TKey, TValue> Dictionary => _dictionary;
         
         public delegate void KeyChange(TKey key, TValue value);
         public delegate void ValueChange(TKey key, TValue previousValue, TValue newValue);
@@ -69,6 +70,7 @@ namespace IRG
         {
             return _dictionary.TryGetValue(key, out value);
         }
+        
         public void Add(TKey key, TValue value)
         {
             _dictionary.Add(key, value);
