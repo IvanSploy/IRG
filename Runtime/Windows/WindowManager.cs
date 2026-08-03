@@ -10,7 +10,7 @@ namespace IRG.Windows
         public static WindowManager Instance;
 
         public bool ShowOnlyCurrentLevel;
-        public List<string> ShowAlwaysWindows;
+        public List<string> ShowAlwaysWindows = new();
         private readonly HashSet<string> _showAlwaysSet = new();
         
         private readonly Dictionary<string, IWindow> _allWindows = new();
@@ -40,6 +40,8 @@ namespace IRG.Windows
                 _allWindows.Add(window.Name, window);
                 if (window.IsOpen) AddWindow(window.Level, window.Name);
             }
+
+            Refresh();
         }
 
         private void OnValidate()

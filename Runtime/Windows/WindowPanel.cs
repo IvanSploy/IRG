@@ -3,26 +3,36 @@ using UnityEngine.UIElements;
 
 namespace IRG.Windows
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class WindowDocument : MonoBehaviour, IWindow
+    [RequireComponent(typeof(PanelRenderer))]
+    public class WindowPanel : MonoBehaviour, IWindow
     {
         [field:SerializeField] public bool IsOpen { get; private set; }
         [SerializeField] private string _name;
         [field:SerializeField] public int Level { get; private set; }
-        
-        private UIDocument _document;
+
+        private PanelRenderer _panelRenderer;
         private VisualElement _root;
 
         public string Name => _name;
 
         private void Awake()
         {
-            _document = GetComponent<UIDocument>();
+            _panelRenderer = GetComponent<PanelRenderer>();
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
-            _root = _document.rootVisualElement;
+            _panelRenderer.RegisterUIReloadCallback(OnUIReload);
+        }
+        
+        void OnDisable()
+        {
+            _panelRenderer.UnregisterUIReloadCallback(OnUIReload);
+        }
+        
+        void OnUIReload(PanelRenderer renderer, VisualElement rootElement)
+        {
+            _root = rootElement;
             _root.SetDisplay(IsOpen);
         }
 

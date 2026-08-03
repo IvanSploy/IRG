@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -21,8 +22,17 @@ namespace IRG
             }
             
             Instance = this;
-            if (_startLocked) HideMouse();
+        }
+
+        private void OnEnable()
+        {
+            if (_startLocked) Unlock("CursorManager");
             else Lock("CursorManager");
+        }
+
+        private void OnDisable()
+        {
+            Unlock("CursorManager");
         }
 
         private void OnDestroy()
