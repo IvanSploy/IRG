@@ -10,7 +10,7 @@ namespace IRG
         public delegate void KeyChange(TKey key, TValue value);
         public delegate void ValueChange(TKey key, TValue previousValue, TValue newValue);
         private event KeyChange NotifyAddEvent;
-        private event ValueChange NotifyModifyEvent;
+        private event ValueChange NotifyUpdateEvent;
         private event KeyChange NotifyRemoveEvent;
 
         public IDisposable SubscribeAdd(KeyChange action)
@@ -24,15 +24,15 @@ namespace IRG
             NotifyAddEvent -= action;
         }
         
-        public IDisposable SubscribeModify(ValueChange action)
+        public IDisposable SubscribeUpdate(ValueChange action)
         {
-            NotifyModifyEvent += action;
-            return new ActionDisposable(() => UnSubscribeModify(action));
+            NotifyUpdateEvent += action;
+            return new ActionDisposable(() => UnSubscribeUpdate(action));
         }
         
-        public void UnSubscribeModify(ValueChange action)
+        public void UnSubscribeUpdate(ValueChange action)
         {
-            NotifyModifyEvent -= action;
+            NotifyUpdateEvent -= action;
         }
         
         public IDisposable SubscribeRemove(KeyChange action)
@@ -55,7 +55,7 @@ namespace IRG
                 {
                     var oldValue = _dictionary[key];
                     _dictionary[key] = value;
-                    NotifyModifyEvent?.Invoke(key, oldValue, value);
+                    NotifyUpdateEvent?.Invoke(key, oldValue, value);
                 }
                 else
                 {
