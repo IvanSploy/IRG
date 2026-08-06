@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace IRG.Windows
 {
+    //TODO: Convertir a clase estatica sin Unity.
     public class WindowManager : MonoBehaviour
     {
         public static WindowManager Instance;
@@ -16,8 +17,8 @@ namespace IRG.Windows
         private readonly Dictionary<string, IWindow> _allWindows = new();
         private readonly List<HashSet<string>> _currentWindows = new();
 
-        public event Action<string> OnWindowOpen;
-        public event Action<string> OnWindowClosed;
+        public static event Action<string> OnWindowOpen;
+        public static event Action<string> OnWindowClosed;
 
         public int CurrentLevel => _currentWindows.Count - 1;
         [NonSerialized] public bool Locked;
