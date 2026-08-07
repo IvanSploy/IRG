@@ -14,15 +14,15 @@ namespace IRG.Windows
         {
             _actionReference.action.performed += ctx =>
             {
-                if (WindowManager.Instance.CurrentLevel > _freeLevel)
+                if (WindowManager.CurrentLevel > _freeLevel)
                 {
-                    WindowManager.Instance.CloseCurrentLevel();
+                    WindowManager.CloseCurrentLevel();
                 }
                 else
                 {
                     foreach (var window in _openOnFree)
                     {
-                        WindowManager.Instance.Open(window);
+                        WindowManager.Open(window);
                     }
                 }
             };

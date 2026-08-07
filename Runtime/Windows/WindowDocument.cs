@@ -1,19 +1,14 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace IRG.Windows
 {
     [RequireComponent(typeof(UIDocument))]
-    public class WindowDocument : MonoBehaviour, IWindow
+    public class WindowDocument : Window
     {
-        [field:SerializeField] public bool IsOpen { get; private set; }
-        [SerializeField] private string _name;
-        [field:SerializeField] public int Level { get; private set; }
-        
         private UIDocument _document;
         private VisualElement _root;
-
-        public string Name => _name;
 
         private void Awake()
         {
@@ -24,15 +19,21 @@ namespace IRG.Windows
         {
             _root = _document.rootVisualElement;
             _root.SetDisplay(IsOpen);
+            Register();
         }
 
-        public void Open()
+        private void OnDisable()
+        {
+            UnRegister();
+        }
+
+        public override void Open()
         {
             IsOpen = true;
             _root.SetDisplay(true);
         }
 
-        public void Close()
+        public override void Close()
         {
             IsOpen = false;
             _root.SetDisplay(false);

@@ -1,19 +1,12 @@
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace IRG.Windows
 {
-    public class UIWindow : MonoBehaviour, IWindow
+    public class UIWindow : Window
     {
-        [field:SerializeField] public bool IsOpen { get; private set; }
-        [SerializeField] private string _name;
-        [field:SerializeField] public int Level { get; private set; }
-
         private PanelRenderer _panelRenderer;
         private UIDocument _document;
         private VisualElement _root;
-
-        public string Name => _name;
 
         private void Awake()
         {
@@ -36,6 +29,7 @@ namespace IRG.Windows
         void OnDisable()
         {
             if(_panelRenderer) _panelRenderer.UnregisterUIReloadCallback(OnUIReload);
+            UnRegister();
         }
         
         void OnUIReload(PanelRenderer renderer, VisualElement rootElement)
@@ -47,15 +41,16 @@ namespace IRG.Windows
         {
             _root = rootElement;
             _root.SetDisplay(IsOpen);
+            Register();
         }
 
-        public void Open()
+        public override void Open()
         {
             IsOpen = true;
             _root.SetDisplay(true);
         }
 
-        public void Close()
+        public override void Close()
         {
             IsOpen = false;
             _root.SetDisplay(false);

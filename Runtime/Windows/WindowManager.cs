@@ -1,77 +1,52 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace IRG.Windows
 {
-    //TODO: Convertir a clase estatica sin Unity.
-    public class WindowManager : MonoBehaviour
+    public static class WindowManager
     {
-        public static WindowManager Instance;
-
-        public bool ShowOnlyCurrentLevel;
-        public List<string> ShowAlwaysWindows = new();
-        private readonly HashSet<string> _showAlwaysSet = new();
+        public static bool ShowOnlyCurrentLevel;
         
-        private readonly Dictionary<string, IWindow> _allWindows = new();
-        private readonly List<HashSet<string>> _currentWindows = new();
+        private static readonly Dictionary<string, Window> _allWindows = new();
+        private static readonly List<HashSet<string>> _currentWindows = new();
+        private static readonly HashSet<string> _showAlwaysSet = new();
 
         public static event Action<string> OnWindowOpen;
         public static event Action<string> OnWindowClosed;
 
-        public int CurrentLevel => _currentWindows.Count - 1;
-        [NonSerialized] public bool Locked;
+        public static int CurrentLevel => _currentWindows.Count - 1;
+        [NonSerialized] public static bool Locked;
 
-        private void Awake()
+        public static void RegisterWindow(Window window)
         {
-            if (Instance)
-            {
-                Destroy(this);
-                return;
-            }
-            
-            Instance = this;
-
-            RefreshShowAlwaysWindows();
-
-            var windows = GetComponentsInChildren<IWindow>();
-            foreach (var window in windows)
-            {
-                _allWindows.Add(window.Name, window);
-                if (window.IsOpen) AddWindow(window.Level, window.Name);
-            }
-
+            _allWindows.Add(window.Key, window);
+            if(window.ShowAlwaysWhenOpen) _showAlwaysSet.Add(window.Key);
+            if (window.IsOpen) AddWindow(window.Level, window.Key);
             Refresh();
         }
 
-        private void OnValidate()
+        public static void UnRegisterWindow(Window window)
         {
-            RefreshShowAlwaysWindows();
+            if(window.ShowAlwaysWhenOpen) _showAlwaysSet.Remove(window.Key);
+            RemoveWindow(window.Level, window.Key);
+            _allWindows.Remove(window.Key);
+            Refresh();
         }
 
-        private void RefreshShowAlwaysWindows()
-        {
-            _showAlwaysSet.Clear();
-            foreach (var windowName in ShowAlwaysWindows)
-            {
-                _showAlwaysSet.Add(windowName);
-            }
-        }
-
-        public IReadOnlyCollection<string> Get(int level)
+        public static IReadOnlyCollection<string> Get(int level)
         {
             if (level >= _currentWindows.Count) return null;
             return _currentWindows[level];
         }
 
-        public bool HasWindow(int level, string windowName)
+        public static bool HasWindow(int level, string windowName)
         {
             if (level >= _currentWindows.Count) return false;
             return _currentWindows[level].Contains(windowName);
         }
         
-        public bool HasWindow(string windowName)
+        public static bool HasWindow(string windowName)
         {
             foreach (var levelWindows in _currentWindows)
             {
@@ -81,13 +56,13 @@ namespace IRG.Windows
             return false;
         }
 
-        public void Toggle(string windowName)
+        public static void Toggle(string windowName)
         {
             if(HasWindow(windowName)) Close(windowName);
             else Open(windowName);
         }
 
-        public void Open(string windowName)
+        public static void Open(string windowName)
         {
             if (!_allWindows.TryGetValue(windowName, out var window)) return;
             if (!AddWindow(windowName)) return;
@@ -96,7 +71,7 @@ namespace IRG.Windows
             OnWindowOpen?.Invoke(windowName);
         }
         
-        public void Close(string windowName)
+        public static void Close(string windowName)
         {
             if (!_allWindows.TryGetValue(windowName, out var window)) return;
             if (!RemoveWindow(windowName)) return;
@@ -105,7 +80,7 @@ namespace IRG.Windows
             OnWindowClosed?.Invoke(windowName);
         }
         
-        public void CloseCurrentLevel()
+        public static void CloseCurrentLevel()
         {
             if (CurrentLevel < 0) return;
             var windowNames = _currentWindows[CurrentLevel];
@@ -115,27 +90,27 @@ namespace IRG.Windows
             }
         }
         
-        public void Lock()
+        public static void Lock()
         {
             Locked = true;
             if (Locked) CursorManager.Lock("Windows");
             else CursorManager.Unlock("Windows");
         }
         
-        public void UnLock()
+        public static void UnLock()
         {
             Locked = false;
             if (Locked) CursorManager.Lock("Windows");
             else CursorManager.Unlock("Windows", true);
         }
         
-        private bool AddWindow(string windowName)
+        private static bool AddWindow(string windowName)
         {
             var window = _allWindows[windowName];
             return AddWindow(window.Level, windowName);
         }
         
-        private bool AddWindow(int level, string windowName)
+        private static bool AddWindow(int level, string windowName)
         {
             while (level >= _currentWindows.Count)
             {
@@ -146,13 +121,13 @@ namespace IRG.Windows
             return set.Add(windowName);
         }
         
-        private bool RemoveWindow(string windowName)
+        private static bool RemoveWindow(string windowName)
         {
             var window = _allWindows[windowName];
             return RemoveWindow(window.Level, windowName);
         }
         
-        private bool RemoveWindow(int level, string windowName)
+        private static bool RemoveWindow(int level, string windowName)
         {
             if(level >= _currentWindows.Count) return false;
             
@@ -169,7 +144,7 @@ namespace IRG.Windows
             return true;
         }
 
-        public void Refresh()
+        public static void Refresh()
         {
             if (CurrentLevel > 0) Lock();
             else UnLock();

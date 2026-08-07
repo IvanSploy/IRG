@@ -33,20 +33,20 @@ namespace IRG.Windows
                     case InputType.Open:
                         config.Action.action.performed += _ =>
                         {
-                            WindowManager.Instance.Open(config.Window);
+                            WindowManager.Open(config.Window);
                         };
                         break;
                     case InputType.Close:
                         config.Action.action.performed += _ =>
                         {
-                            WindowManager.Instance.Close(config.Window);
+                            WindowManager.Close(config.Window);
                         };
                         break;
                     case InputType.Toggle:
                     default:
                         config.Action.action.performed += _ =>
                         {
-                            WindowManager.Instance.Toggle(config.Window);
+                            WindowManager.Toggle(config.Window);
                         };
                         break;
                 }
