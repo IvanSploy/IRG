@@ -1,36 +1,22 @@
+using UnityEngine;
+
 namespace IRG
 {
-    public abstract class Singleton<TSingleton> : Singleton
-        where TSingleton : Singleton, new()
+    public abstract class Singleton<TSingleton> : MonoBehaviour where TSingleton : Singleton<TSingleton>
     {
-        private static TSingleton _instance;
+        public static TSingleton Instance;
 
-        public static TSingleton Instance
+        private void Awake()
         {
-            get
+            if (Instance)
             {
-                _instance ??= new TSingleton();
-                _instance.Load();
-                return _instance;
+                Destroy(this);
+                return;
             }
-        }
-        
-        public static TSingleton Data
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new TSingleton();
-                    _instance.Load();
-                }
-                return _instance;
-            }
-        }
-    }
 
-    public abstract class Singleton
-    {
-        public abstract void Load();
+            Instance = (TSingleton)this;
+            OnAwake();
+        }
+        protected virtual void OnAwake() { }
     }
 }

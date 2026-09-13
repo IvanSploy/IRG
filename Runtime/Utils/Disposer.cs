@@ -7,6 +7,13 @@ namespace IRG
     public class Disposer : MonoBehaviour
     {
         protected readonly List<IDisposable> _disposables = new();
+        
+        protected void OnEnable()
+        {
+            OnEnabled();
+        }
+        protected virtual void OnEnabled() { }
+        
         private void OnDisable()
         {
             OnDisabled();
