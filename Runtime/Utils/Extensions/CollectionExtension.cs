@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace IRG
@@ -97,6 +98,16 @@ namespace IRG
         public static void AddTo(this IDisposable disposable, ICollection<IDisposable> disposables)
         {
             disposables.Add(disposable);
+        }
+        
+        public static T Last<T>(this IList<T> list)
+        {
+            return list[^1];
+        }
+        
+        public static void RemoveLast(this IList list)
+        {
+            list.RemoveAt(list.Count - 1);
         }
     }
 }

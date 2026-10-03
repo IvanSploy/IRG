@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace IRG.FSM
 {
+    [Serializable]
     public class StateMachine
     {
         public bool Active { get; set; } = true;

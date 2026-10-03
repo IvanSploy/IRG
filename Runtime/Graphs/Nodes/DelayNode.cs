@@ -13,7 +13,7 @@ namespace IRG.Graphs
     {
         private float _timer;
 
-        public override void OnInit()
+        public override void OnStart()
         {
             _timer = Data.Delay;
         }

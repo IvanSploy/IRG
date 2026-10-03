@@ -42,7 +42,7 @@ namespace IRG.Graphs
         
         public abstract void SetData(NodeData data);
         
-        public virtual void OnInit() { }
+        public virtual void OnStart() { }
         public virtual bool OnUpdate() => true;
         public virtual void OnEnd() { }
         

@@ -1,5 +1,8 @@
+using System;
+
 namespace IRG.FSM
 {
+    [Serializable]
     public abstract class State
     {
         public abstract void Enter();

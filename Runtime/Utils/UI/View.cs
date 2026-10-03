@@ -2,8 +2,7 @@ using UnityEngine.UIElements;
 
 namespace IRG
 {
-    //TODO: Investigar acerca de pipelines y de introducción de composicion u otros elementos en esto.
-    //Basicamente, convertir la carga de view model y de la UI en metodos normales a los que se les llama en orden dependiendo de la composición.
+    //TODO: Basicamente, convertir la carga de view model y de la UI en metodos normales a los que se les llama en orden dependiendo de la composición.
     public abstract class UIView<TViewModel> : View<TViewModel> where TViewModel : ViewModel, new()
     {
         private UIDocument _document;

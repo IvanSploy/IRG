@@ -1,7 +1,7 @@
 namespace IRG
 {
-    public abstract class SingletonData<TSingleton> : SingletonData
-        where TSingleton : SingletonData, new()
+    public abstract class SingletonData<TSingleton>
+        where TSingleton : SingletonData<TSingleton>, new()
     {
         private static TSingleton _instance;
 
@@ -27,10 +27,7 @@ namespace IRG
                 return _instance;
             }
         }
-    }
-
-    public abstract class SingletonData
-    {
+        
         public abstract void Load();
     }
 }

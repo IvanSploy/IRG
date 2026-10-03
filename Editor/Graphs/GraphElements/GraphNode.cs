@@ -87,6 +87,7 @@ namespace IRG.Graphs.Editor
                 InputPort = CreatePort("In", direction: Direction.Input);
                 InputPort.SetID("In");
                 inputContainer.Add(InputPort);
+                inputContainer.style.flexGrow = 0f;
             }
             
             /* Output Container */
@@ -96,6 +97,7 @@ namespace IRG.Graphs.Editor
                 Port outPort = CreatePort("Next");
                 outPort.SetID(portID);
                 outputContainer.Add(outPort);
+                outputContainer.style.flexShrink = 1f;
                 OutputPorts.Add(outPort);
             }
 

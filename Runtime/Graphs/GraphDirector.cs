@@ -55,7 +55,7 @@ namespace IRG.Graphs
             {
                 current.AddReadyNode();
                 while (!current.IsReady) yield return null;
-                current.OnInit();
+                current.OnStart();
                 while(!current.OnUpdate()) yield return null;
                 current.OnEnd();
                 var nextNodes = current.GetNextNodes();
