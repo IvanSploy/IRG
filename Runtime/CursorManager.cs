@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,7 +6,7 @@ namespace IRG
 {
     public class CursorManager : MonoBehaviour
     {
-        public static CursorManager Instance;
+        private static CursorManager _instance;
         
         [SerializeField] private bool _startLocked = true;
 
@@ -15,13 +14,13 @@ namespace IRG
         
         private void Awake()
         {
-            if (Instance)
+            if (_instance)
             {
                 Destroy(this);
                 return;
             }
             
-            Instance = this;
+            _instance = this;
         }
 
         private void OnEnable()
