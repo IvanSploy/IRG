@@ -1,33 +1,24 @@
 using System.Collections.Generic;
+using IRG.Editor;
 using UnityEditor;
-using UnityEngine;
 using Edge = UnityEditor.Experimental.GraphView.Edge;
 
 namespace IRG.Graphs.Editor
 {
     public static class GraphIO
     {
-        private static string GetFullPath(string folderName, string fileName) => $"Assets/{folderName}/{fileName}.asset";
-
-        public static string Create(string folderName)
+        public static GraphData Create(string folderName)
         {
-            int index = 0;
-            string fileName;
-            do
-            {
-                fileName = $"New Graph {index}";
-                index++;
-            } while (AssetDatabase.LoadAssetAtPath<GraphData>(GetFullPath(folderName, fileName)));
-            GraphData graphData = CreateAsset<GraphData>(folderName, fileName);
-            graphData?.Initialize(fileName);
-            return fileName;
+            GraphData graphData = AssetsIO.Create<GraphData>(folderName);
+            graphData?.Initialize();
+            return graphData;
         }
 
         public static GraphData Load(CustomGraphView graphView, string fileName, bool displayPopUp = true)
         {
             if (string.IsNullOrEmpty(fileName)) return null;
             
-            GraphData graphData = LoadAsset<GraphData>(graphView.Folder, fileName);
+            GraphData graphData = AssetsIO.Load<GraphData>(AssetsIO.Combine(graphView.Folder, fileName));
 
             if (graphData == null)
             {
@@ -111,13 +102,13 @@ namespace IRG.Graphs.Editor
         {
             if (string.IsNullOrEmpty(fileName)) return;
             
-            CreateFolder(graphView.Folder);
-            GraphData graphData = LoadAsset<GraphData>(graphView.Folder, fileName);
+            string path = AssetsIO.Combine(graphView.Folder, fileName);
+            GraphData graphData = AssetsIO.Load<GraphData>(path);
             if (graphData == null)
             { 
-                graphData = CreateAsset<GraphData>(graphView.Folder, fileName);
+                graphData = AssetsIO.Create<GraphData>(path);
             }
-            graphData.Initialize(fileName);
+            graphData.Initialize();
             
             graphView.graphElements.ForEach(graphElement =>
             {
@@ -151,68 +142,7 @@ namespace IRG.Graphs.Editor
                 }
             });
 
-            SaveAsset(graphData);
-        }
-
-        public static void CreateFolder(string folderName)
-        {
-            if (AssetDatabase.IsValidFolder($"Assets/{folderName}")) return;
-            AssetDatabase.CreateFolder("Assets/", folderName);
-        }
-        
-        public static void CreateFolder(string parent, string folderName)
-        {
-            if (AssetDatabase.IsValidFolder($"{parent}/{folderName}")) return;
-            AssetDatabase.CreateFolder(parent, folderName);
-        }
-
-        public static void RemoveFolder(string path)
-        {
-            FileUtil.DeleteFileOrDirectory($"{path}.meta");
-            FileUtil.DeleteFileOrDirectory($"{path}/");
-        }
-
-        public static T CreateAsset<T>(string folder, string assetName) where T : ScriptableObject
-        {
-            if (string.IsNullOrEmpty(assetName)) return null;
-            string fullPath = GetFullPath(folder, assetName);
-
-            T asset = LoadAsset<T>(folder, assetName);
-
-            if (asset == null)
-            {
-                asset = ScriptableObject.CreateInstance<T>();
-
-                AssetDatabase.CreateAsset(asset, fullPath);
-            }
-
-            return asset;
-        }
-
-        public static T LoadAsset<T>(string folder, string assetName) where T : ScriptableObject
-        {
-            string fullPath = GetFullPath(folder, assetName);
-            return AssetDatabase.LoadAssetAtPath<T>(fullPath);
-        }
-
-        public static void RenameAsset(string folder, string fileName, string newName)
-        {
-            var path = GetFullPath(folder, fileName);
-            AssetDatabase.RenameAsset(path, newName);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-        }
-
-        public static void SaveAsset(Object asset)
-        {
-            EditorUtility.SetDirty(asset);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-        }
-
-        public static void RemoveAsset(string folder, string assetName)
-        {
-            AssetDatabase.DeleteAsset(GetFullPath(folder, assetName));
+            AssetsIO.Save(graphData);
         }
     }
 }

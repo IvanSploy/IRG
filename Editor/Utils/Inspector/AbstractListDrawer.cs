@@ -41,7 +41,7 @@ namespace IRG.Editor
             {
                 reorderableList = new ReorderableList(listProperty.serializedObject, listProperty, true,
                     true, true, true);
-
+                
                 reorderableList.drawHeaderCallback = rect =>
                 {
                     EditorGUI.LabelField(rect, $"{label.text.WithSpaces()}");

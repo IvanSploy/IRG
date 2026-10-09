@@ -1,9 +1,28 @@
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace IRG
 {
-    public static class TextExtensions
+    public static class StringExtensions
     {
+        public static string GetFolder(this string path)
+        {
+            int index1 = path.LastIndexOf('\\');
+            int index2 = path.LastIndexOf('/');
+            int index = Mathf.Max(index1, index2);
+            if (index < 0) return path;
+            return path[..index];
+        }
+
+        public static string GetFileName(this string path)
+        {
+            int index1 = path.LastIndexOf('\\');
+            int index2 = path.LastIndexOf('/');
+            int index = Mathf.Max(index1, index2) + 1;
+            if (index <= 0) return path;
+            return path[index..];
+        }
+        
         public static string ToSnakeCase(this string input)
         {
             return Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1_$2")

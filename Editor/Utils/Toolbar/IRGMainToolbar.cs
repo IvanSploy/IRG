@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace IRG.Editor
 {
-    public class MainToolbar
+    public static class MainToolbar
     {
         [MainToolbarElement("IRG/Delayed Pause", defaultDockPosition = MainToolbarDockPosition.Middle)]
         public static MainToolbarElement DelayedPauseButton()
