@@ -1,14 +1,16 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Packages/com.irg.utils/Runtime/Resources/ToolStyle.uss?fileID=7433441132597879392&amp;guid=797c302f8298e8746a481558d0a77977&amp;type=3#ToolStyle"/>
-    <ui:VisualElement name="Header" style="flex-grow: 0; flex-shrink: 0; background-color: rgb(50, 50, 50); padding-top: 5px; padding-right: 5px; padding-bottom: 5px; padding-left: 5px;">
-        <ui:Label text="Title" name="Title" style="font-size: 16px; flex-direction: row-reverse; -unity-font-style: bold; -unity-text-align: middle-left; padding-top: 5px; padding-right: 5px; padding-bottom: 5px; padding-left: 0; -unity-text-generator: standard;">
-            <ui:Button text="-" name="RemoveButton" class="dark-button" style="font-size: 24px; padding-top: 0; padding-right: 8px; padding-bottom: 0; padding-left: 8px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 5px; width: 30px; height: 30px;"/>
-            <ui:Button text="+" name="AddButton" class="dark-button" style="font-size: 24px; padding-top: 0; padding-right: 8px; padding-bottom: 0; padding-left: 8px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; width: 30px; height: 30px;"/>
-        </ui:Label>
+    <ui:VisualElement name="SearchHeader" style="flex-grow: 0; flex-shrink: 0; background-color: rgb(50, 50, 50); padding-top: 5px; padding-right: 5px; padding-bottom: 5px; padding-left: 5px;">
+        <ui:VisualElement name="" style="flex-grow: 1; flex-direction: row;">
+            <ui:Label text="Title Example" name="Title" style="font-size: 16px; flex-direction: row-reverse; -unity-font-style: bold; -unity-text-align: middle-left; -unity-text-generator: advanced; -unity-text-auto-size: best-fit 10px 100px; height: 35px; flex-shrink: 1; flex-grow: 1; margin-right: 10px; padding-bottom: 7px; padding-left: 1px; margin-left: 0; padding-top: 7px;"/>
+            <ui:VisualElement style="flex-grow: 0; flex-direction: row; align-items: center; justify-content: center; flex-shrink: 0;">
+                <ui:Button text="+" name="AddButton" class="dark-button unity-label" style="font-size: 24px; padding-top: 0; padding-right: 8px; padding-bottom: 0; padding-left: 8px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; width: 30px; height: 30px; display: flex;"/>
+                <ui:Button text="-" name="RemoveButton" class="dark-button unity-label" style="font-size: 24px; padding-top: 0; padding-right: 8px; padding-bottom: 0; padding-left: 8px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 5px; width: 30px; height: 30px; display: flex;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
         <ui:VisualElement name="SearchBar" style="flex-grow: 1; flex-direction: row;">
             <ui:TextField placeholder-text="Search..." keyboard-type="Search" name="SearchField" style="color: rgb(196, 196, 196); -unity-text-align: upper-left; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; flex-grow: 1;"/>
             <ui:Button text="Clear" name="ClearButton"/>
         </ui:VisualElement>
     </ui:VisualElement>
-    <ui:ListView allow-add="false" allow-remove="false" name="ListView" virtualization-method="DynamicHeight" show-add-remove-footer="false" show-foldout-header="false" show-alternating-row-backgrounds="ContentOnly" show-border="false" style="flex-grow: 1; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 5px; padding-right: 5px; padding-bottom: 5px; padding-left: 5px;"/>
 </ui:UXML>

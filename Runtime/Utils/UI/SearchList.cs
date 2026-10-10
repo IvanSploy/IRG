@@ -5,87 +5,85 @@ using UnityEngine.UIElements;
 namespace IRG
 {
     [UxmlElement]
-    public partial class SearchList : VisualElement
+    public partial class SearchList : ListView
     {
-        private string _title;
-        [UxmlAttribute] public string Title
+        [UxmlAttribute("header-title")]
+        public string HeaderTitle
         {
-            get => _title;
+            get => headerTitle;
             set
             {
-                _title = value;
-                TitleLabel.text = _title;
+                headerTitle = value;
+                _titleLabel.text = headerTitle;
             }
         }
         
-        private bool _hasAdd = true;
-        [UxmlAttribute] public bool HasAdd
+        [UxmlAttribute("allow-add")]
+        public bool AllowAdd
         {
-            get => _hasAdd;
+            get => allowAdd;
             set
             {
-                _hasAdd = value;
-                AddButton.SetDisplay(_hasRemove);
+                allowAdd = value;
+                _addButton.SetDisplay(allowAdd);
             }
         }
         
-        private bool _hasRemove = true;
-        [UxmlAttribute] public bool HasRemove
+        [UxmlAttribute("allow-remove")]
+        public bool AllowRemove
         {
-            get => _hasRemove;
+            get => allowRemove;
             set
             {
-                _hasRemove = value;
-                RemoveButton.SetDisplay(_hasRemove);
-            } 
+                allowRemove = value;
+                _removeButton.SetDisplay(allowRemove);
+            }
         }
-        
-        private VisualTreeAsset _itemTemplate;
-        [UxmlAttribute] public VisualTreeAsset ItemTemplate
-        {
-            get => _itemTemplate;
-            set
-            {
-                _itemTemplate = value;
-                ListView.itemTemplate = _itemTemplate;
-            } 
-        }
-        
-        public readonly VisualElement Root;
-        public readonly Label TitleLabel;
-        public readonly Button AddButton;
-        public readonly Button RemoveButton;
-        public readonly TextField SearchField;
-        public readonly Button ClearButton;
-        public readonly ListView ListView;
+
+        private VisualElement _headerRoot;
+        private Label _titleLabel;
+        private Button _addButton;
+        private Button _removeButton;
+        private TextField _searchField;
+        private Button _clearButton;
 
         public event Action OnAdd;
         public event Action OnRemove;
         public event Action<string> OnSearch;
-        
+
         public SearchList()
         {
-            var visualAsset = Resources.Load<VisualTreeAsset>("SearchList");
-            Root = visualAsset.Instantiate();
-            Add(Root);
+            makeHeader = () =>
+            {
+                var visualAsset = Resources.Load<VisualTreeAsset>("SearchList");
+                _headerRoot = visualAsset.Instantiate();
+                
+                _titleLabel = _headerRoot.Q<Label>("Title");
             
-            TitleLabel = Root.Q<Label>("Title");
-            TitleLabel.text = Title;
+                _addButton = _headerRoot.Q<Button>("AddButton");
+                _addButton.clicked += OnAddItem;
+                onAdd = _ => OnAddItem();
             
-            AddButton = Root.Q<Button>("AddButton");
-            AddButton.clicked += OnAddItem;
+                _removeButton = _headerRoot.Q<Button>("RemoveButton");
+                _removeButton.clicked += OnRemoveItem;
+                onRemove = _ => OnRemoveItem();
             
-            RemoveButton = Root.Q<Button>("RemoveButton");
-            RemoveButton.clicked += OnRemoveItem;
+                _searchField = _headerRoot.Q<TextField>("SearchField");
+                _searchField.RegisterValueChangedCallback(_ => Rebuild());
             
-            SearchField = Root.Q<TextField>("SearchField");
-            SearchField.RegisterValueChangedCallback(_ => Rebuild());
-            
-            ClearButton = Root.Q<Button>("ClearButton");
-            ClearButton.clicked += OnClear;
-            
-            ListView = Root.Q<ListView>();
-            ListView.itemTemplate = _itemTemplate;
+                _clearButton = _headerRoot.Q<Button>("ClearButton");
+                _clearButton.clicked += OnClear;
+                
+                return _headerRoot;
+            };
+
+
+            schedule.Execute(() => showAddRemoveFooter = false);
+        }
+
+        public void SetSearchWithoutNotify(string search)
+        {
+            _searchField.SetValueWithoutNotify(search);
         }
 
         private void OnAddItem()
@@ -100,14 +98,13 @@ namespace IRG
 
         private void OnClear()
         {
-            SearchField.value = "";
+            _searchField.value = "";
         }
 
-        public void Rebuild()
+        public new void Rebuild()
         {
-            OnSearch?.Invoke(SearchField.value);
-            ListView.Rebuild();            
+            OnSearch?.Invoke(_searchField.value);
+            base.Rebuild();
         }
-        
     }
 }

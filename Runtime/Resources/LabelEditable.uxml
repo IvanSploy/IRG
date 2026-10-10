@@ -1,0 +1,5 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.irg.utils/Runtime/Resources/ToolStyle.uss?fileID=7433441132597879392&amp;guid=797c302f8298e8746a481558d0a77977&amp;type=3#ToolStyle"/>
+    <ui:Label text="None" name="Title" style="padding-top: 1px; padding-right: 4px; padding-bottom: 0; padding-left: 4px; margin-top: 2px; margin-right: 2px; margin-bottom: 2px; margin-left: 2px; font-size: 16px; -unity-font-style: bold; display: flex; -unity-text-auto-size: best-fit 10px 100px; flex-shrink: 1; flex-grow: 1; align-self: stretch;"/>
+    <ui:TextField is-delayed="true" name="TitleEditor" placeholder-text="None" value="None" style="display: flex; flex-grow: 1; -unity-text-auto-size: best-fit 10px 100px; flex-shrink: 1;"/>
+</ui:UXML>
