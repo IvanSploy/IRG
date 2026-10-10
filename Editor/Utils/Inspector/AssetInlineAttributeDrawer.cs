@@ -51,7 +51,7 @@ namespace IRG.Editor
         {
             float totalHeight = EditorGUIUtility.singleLineHeight;
 
-            if (_expanded && property.objectReferenceValue != null)
+            if (_expanded && property.objectReferenceValue)
             {
                 SerializedObject serializedTarget = new SerializedObject(property.objectReferenceValue);
                 SerializedProperty prop = serializedTarget.GetIterator();
