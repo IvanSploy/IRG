@@ -56,7 +56,7 @@ namespace IRG
             makeHeader = () =>
             {
                 var visualAsset = Resources.Load<VisualTreeAsset>("SearchList");
-                _headerRoot = visualAsset.Instantiate();
+                _headerRoot = visualAsset.Instantiate().ElementAt(0);
                 
                 _titleLabel = _headerRoot.Q<Label>("Title");
             

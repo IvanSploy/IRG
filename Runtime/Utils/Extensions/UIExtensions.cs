@@ -60,6 +60,21 @@ namespace IRG
             element.style.paddingBottom = margin;
             element.style.paddingLeft = margin;
         }
+        
+        /// <summary>
+        /// Adds all the children from a VisualTreeAsset to another element without the TemplateContainer.
+        /// </summary>
+        /// <param name="visualTreeAsset"></param>
+        /// <param name="element"></param>
+        public static void AddTo(this VisualTreeAsset visualTreeAsset, VisualElement element)
+        {
+            var root = visualTreeAsset.CloneTree();
+            while (root.childCount > 0)
+            {
+                var child = root.ElementAt(0);
+                element.Add(child);
+            }
+        }
 
         #endregion
 

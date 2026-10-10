@@ -30,13 +30,7 @@ namespace IRG
         
         public LabelEditable()
         {
-            var visualAsset = Resources.Load<VisualTreeAsset>("LabelEditable");
-            var root = visualAsset.Instantiate();
-            while (root.childCount > 0)
-            {
-                var child = root.ElementAt(0);
-                Add(child);
-            }
+            Resources.Load<VisualTreeAsset>("LabelEditable").AddTo(this);
             
             _label = this.Q<Label>();
             _label.RegisterValueChangedCallback(evt =>
