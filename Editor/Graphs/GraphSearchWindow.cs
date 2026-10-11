@@ -28,11 +28,6 @@ namespace IRG.Graphs.Editor
         
         public List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
         {
-            var entries = new List<SearchTreeEntry>
-            {
-                new SearchTreeGroupEntry(new GUIContent($"Cinematic Nodes")),
-            };
-            
             var types = TypeCache.GetTypesDerivedFrom(_type).Where(type => !type.IsAbstract).ToList();
             types.Sort((item1, item2) =>
                 String.Compare(item1.Name, item2.Name, StringComparison.InvariantCulture));
@@ -53,18 +48,21 @@ namespace IRG.Graphs.Editor
                                                    && graphNodeAttr.Filter != _filter)
                     continue;
 
-                groups.AddToList(string.IsNullOrEmpty(graphNodeAttr.Group) ? "" : graphNodeAttr.Group, type);
+                string groupName = string.IsNullOrEmpty(graphNodeAttr.Group) ? "" : graphNodeAttr.Group;
+                groups.AddToList(groupName, type);
             }
+
+            string filterName = string.IsNullOrEmpty(_filter) ? "All" : _filter;
+            
+            var entries = new List<SearchTreeEntry>
+            {
+                new SearchTreeGroupEntry(new GUIContent($"{filterName} Nodes")),
+            };
 
             foreach (var group in groups)
             {
                 entries.AddRange(CreateEntries(group.Key, group.Value, 2));
             }
-            entries.Add(new SearchTreeEntry(new GUIContent("Group", _indentIcon))
-            {
-                userData = typeof(GraphGroup),
-                level = 1,
-            });
             return entries;
         }
         

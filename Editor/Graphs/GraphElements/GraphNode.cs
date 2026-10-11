@@ -30,7 +30,7 @@ namespace IRG.Graphs.Editor
     
     public abstract class GraphNode : Node, IConvertible<NodeData>
     {
-        protected CustomGraphView _graphView;
+        protected Graph _graph;
         
         public string ID { get; private set; }
         public GraphGroup Group { get; set; }
@@ -59,9 +59,9 @@ namespace IRG.Graphs.Editor
         protected virtual void OnLoad(){}
         protected virtual void OnSave(){}
 
-        public void SetGraphView(CustomGraphView graphView)
+        public void SetGraphView(Graph graph)
         {
-            _graphView = graphView;
+            _graph = graph;
         }
 
         public void Draw()
@@ -155,7 +155,7 @@ namespace IRG.Graphs.Editor
                     edges.AddRange(port.connections);
                 }
             }
-            _graphView.DeleteElements(edges);
+            _graph.DeleteElements(edges);
         }
         
         protected Port CreatePort(string text = "", Orientation orientation = Orientation.Horizontal,
@@ -163,6 +163,7 @@ namespace IRG.Graphs.Editor
         {
             Port port = InstantiatePort(orientation, direction, capacity, typeof(bool));
             port.portName = text;
+            port.AddManipulator(new EdgeConnector<Edge>(new EdgeConnectorManipulator(_graph)));
             return port;
         }
 

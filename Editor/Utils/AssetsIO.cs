@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEditor;
 using Object = UnityEngine.Object;
@@ -69,6 +70,7 @@ namespace IRG.Editor
             return AssetDatabase.AssetPathExists(GetAssetPath(path));
         }
         
+        [NotNull]
         public static T Create<T>(string path) where T : ScriptableObject
         {
             string folderPath = path.GetFolder();

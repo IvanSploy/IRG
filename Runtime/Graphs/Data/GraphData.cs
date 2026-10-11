@@ -6,15 +6,18 @@ namespace IRG.Graphs
     public class GraphData : ScriptableObject
     {
         public InitialNodeData InitialNode;
-        [SerializeReference] public List<NodeData> Nodes;
-        public List<EdgeData> Edges;
-        public List<GroupData> Groups;
+        [SerializeReference] public List<NodeData> Nodes = new();
+        public List<EdgeData> Edges = new();
+        public List<GroupData> Groups = new();
 
-        public void Initialize()
+        public void Clear()
         {
-            Nodes = new List<NodeData>();
-            Edges = new List<EdgeData>();
-            Groups = new List<GroupData>();
+            InitialNode = null;
+            Nodes.Clear();
+            Edges.Clear();
+            Groups.Clear();
         }
+        
+        
     }
 }
