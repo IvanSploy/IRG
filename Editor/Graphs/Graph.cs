@@ -22,19 +22,36 @@ namespace IRG.Graphs.Editor
         //Used for Search Window when edge creation failed.
         private Edge _pendingEdge;
         private Port _pendingPort;
+
+        private readonly GraphData _graphData;
+        private readonly GraphData _copyGraphData;
+        private readonly Vector2 _copyOffset = new(1f, 1f);
+
+        private Vector2 _mousePos;
         
         public Graph()
         {
+            _graphData = ScriptableObject.CreateInstance<GraphData>();
+            _copyGraphData = ScriptableObject.CreateInstance<GraphData>();
+            
             RegisterGroupCallbacks();
             RegisterDeleteSelection();
             RegisterGraphViewChanged();
+            RegisterCopyPaste();
                 
             AddManipulators();
             AddBackground();
             
             AddStyle();
+            
+            RegisterCallback<PointerMoveEvent>(evt =>
+            {
+                _mousePos = evt.position;
+            });
 
             schedule.Execute(Initialize);
+
+            Undo.undoRedoPerformed += RefreshState;
         }
 
         private void Initialize()
@@ -48,6 +65,7 @@ namespace IRG.Graphs.Editor
             {
                 GraphGroup cinematicGroup = (GraphGroup) group;
                 cinematicGroup.title = newTitle;
+                RecordState("Graph Group Title Changed");
             };
 
             elementsAddedToGroup = (group, elements) =>
@@ -105,6 +123,7 @@ namespace IRG.Graphs.Editor
                         }
                     }
                 }
+                RecordState("Graph Delete Selection");
             };
         }
         
@@ -112,17 +131,43 @@ namespace IRG.Graphs.Editor
         {
             graphViewChanged = changes =>
             {
-                if (changes.elementsToRemove == null) return changes;
-                foreach (var graphElement in changes.elementsToRemove)
+                if (changes.movedElements != null)
                 {
-                    if (graphElement is not GraphNode node) continue;
-                    if (node.Group != null)
+                    RecordState("Graph Moved Elements");
+                }
+
+                if (changes.elementsToRemove != null)
+                {
+                    foreach (var graphElement in changes.elementsToRemove)
                     {
-                        RemoveGroupedNode(node, node.Group);
+                        if (graphElement is not GraphNode node) continue;
+                        if (node.Group != null)
+                        {
+                            RemoveGroupedNode(node, node.Group);
+                        }
                     }
                 }
 
                 return changes;
+            };
+        }
+        
+        private void RegisterCopyPaste()
+        {
+            serializeGraphElements = elements =>
+            {
+                SerializeCopy(elements);
+                return "";
+            };
+
+            canPasteSerializedData = data => (bool)_copyGraphData;
+
+            unserializeAndPaste = (operationName, data) =>
+            {
+                _copyGraphData.Isolate();
+                Vector2 pos = GetLocalMousePosition(_mousePos);
+                _copyGraphData.LocalizePositions(pos + _copyOffset);
+                DeSerialize(_copyGraphData);
             };
         }
 
@@ -155,11 +200,8 @@ namespace IRG.Graphs.Editor
         
         private void AddSearchWindow()
         {
-            if (!_searchWindow)
-            {
-                _searchWindow = ScriptableObject.CreateInstance<GraphSearchWindow>();
-                _searchWindow.Initialize(typeof(GraphNode), Filter, OnSearchSelection);
-            }
+            _searchWindow = ScriptableObject.CreateInstance<GraphSearchWindow>();
+            _searchWindow.Initialize(typeof(GraphNode), Filter, OnSearchSelection);
 
             nodeCreationRequest = context =>
             {
@@ -192,7 +234,7 @@ namespace IRG.Graphs.Editor
                 _pendingEdge.input = nodePort = graphNode.InputPort;
                 _pendingEdge.output = _pendingPort;
             }
-
+            
             _pendingPort.Connect(_pendingEdge);
             nodePort.Connect(_pendingEdge);
 
@@ -232,6 +274,7 @@ namespace IRG.Graphs.Editor
         {
             var graphGroup = new GraphGroup();
             graphGroup.Initialize(title, pos);
+            RecordState("Graph Created Group");
             return graphGroup;
         }
         
@@ -252,16 +295,17 @@ namespace IRG.Graphs.Editor
             base.Clear();
         }
 
-        public GraphData CreateNew(string folder)
+        #region Serialization
+
+        public string CreateNew(string folder)
         {
-            GraphData graphData = AssetsIO.Create<GraphData>(folder);
-            graphData.Clear();
-            return graphData;
+            return AssetsIO.Create<GraphData>(folder).name;
         }
 
-        public GraphData Load(string folder, string fileName, bool displayPopUp = true)
+        public bool Load(string folder, string fileName, bool displayPopUp = true)
         {
-            if (string.IsNullOrEmpty(fileName)) return null;
+            if (string.IsNullOrEmpty(fileName)) 
+                throw new ArgumentNullException(nameof(fileName));
             
             GraphData graphData = AssetsIO.Load<GraphData>(AssetsIO.Combine(folder, fileName));
             if (!graphData)
@@ -276,13 +320,76 @@ namespace IRG.Graphs.Editor
                         "Okay"
                     );
                 }
-
-                return null;
+                return false;
             }
             
             Clear();
+            DeSerialize(graphData);
+            schedule.Execute(() => schedule.Execute(() => RecordState("Graph Loaded")));
+            return true;
+        }
+
+        public void Save(string folder, string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) 
+                throw new ArgumentNullException(nameof(fileName));
             
+            string path = AssetsIO.Combine(folder, fileName);
+            Serialize();
+            
+            AssetsIO.Save(path, _graphData);
+        }
+
+        private void Serialize()
+        {
+            _graphData.Clear();
+            Serialize(_graphData, graphElements);
+        }
+        
+        private void SerializeCopy(IEnumerable<GraphElement> elements)
+        {
+            Serialize(_copyGraphData, elements);
+        }
+        
+        private void Serialize(GraphData graphData, IEnumerable<GraphElement> elements)
+        {
+            foreach (var graphElement in elements)
+            {
+                switch (graphElement)
+                {
+                    case InitialNode initialNode:
+                    {
+                        graphData.InitialNode = (InitialNodeData)initialNode.ToData();
+                    } break;
+                    case GraphNode node:
+                    {
+                        graphData.Nodes.Add(node.ToData());
+                    } break;
+                    case GraphGroup group: 
+                    { 
+                        graphData.Groups.Add(group.ToData());
+                    } break;
+                    case Edge edge:
+                    {
+                        var fromNode = (GraphNode)edge.output.node;
+                        var fromPortID = edge.output.GetID();
+                        var toNode = (GraphNode)edge.input.node;
+            
+                        graphData.Edges.Add(new EdgeData
+                        {
+                            FromNodeID = fromNode.ID,
+                            FromPortID = fromPortID,
+                            ToNodeID = toNode.ID
+                        });
+                    } break;
+                }
+            }
+        }
+        
+        private void DeSerialize(GraphData graphData)
+        {
             var groups = new Dictionary<string, GraphGroup>();
+            
             foreach (var groupData in graphData.Groups)
             {
                 GraphGroup group = CreateGroup(groupData);
@@ -339,56 +446,23 @@ namespace IRG.Graphs.Editor
                 AddElement(edge);
                 fromNode.RefreshPorts();
             }
-
-            return graphData;
         }
 
-        public GraphData Save(string folder, string fileName)
+        private void RecordState(string actionName)
         {
-            if (string.IsNullOrEmpty(fileName)) return null;
-            
-            string path = AssetsIO.Combine(folder, fileName);
-            GraphData graphData = AssetsIO.Load<GraphData>(path);
-            if (!graphData) graphData = AssetsIO.Create<GraphData>(path);
-            
-            graphData.Clear();
-            
-            graphElements.ForEach(graphElement =>
-            {
-                switch (graphElement)
-                {
-                    case InitialNode initialNode:
-                    {
-                        graphData.InitialNode = (InitialNodeData)initialNode.ToData();
-                    } break;
-                    case GraphNode node:
-                    {
-                        graphData.Nodes.Add(node.ToData());
-                    } break;
-                    case GraphGroup group: 
-                    { 
-                        graphData.Groups.Add(group.ToData());
-                    } break;
-                    case Edge edge:
-                    {
-                        var fromNode = (GraphNode)edge.output.node;
-                        var fromPortID = edge.output.GetID();
-                        var toNode = (GraphNode)edge.input.node;
-            
-                        graphData.Edges.Add(new EdgeData
-                        {
-                            FromNodeID = fromNode.ID,
-                            FromPortID = fromPortID,
-                            ToNodeID = toNode.ID
-                        });
-                    } break;
-                }
-            });
-            
-            AssetsIO.Save(graphData);
-            return graphData;
+            //TODO: Implement inner UndoRedo system, to avoid using it like Unity does.
+            //if(_graphData.InitialNode != null) Undo.RecordObject(_graphData, actionName);
+            Serialize();
+        }
+        
+        private void RefreshState()
+        {
+            Clear();
+            DeSerialize(_graphData);
         }
 
+        #endregion
+        
         public InitialNode CreateInitialNode(InitialNodeData nodeData)
         {
             var initialNode = new InitialNode();

@@ -14,5 +14,7 @@ namespace IRG.Graphs
         {
             return (NodeData)MemberwiseClone();
         }
+        
+        
     }
 }

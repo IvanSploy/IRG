@@ -6,7 +6,6 @@ namespace IRG
 {
     public static class EasyDebug
     {
-        
         // ReSharper disable Unity.PerformanceAnalysis
         public static void Log(string message)
         {

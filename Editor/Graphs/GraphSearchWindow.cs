@@ -32,6 +32,7 @@ namespace IRG.Graphs.Editor
             types.Sort((item1, item2) =>
                 String.Compare(item1.Name, item2.Name, StringComparison.InvariantCulture));
 
+            //TODO: Sort by group name also to improve the visibility.
             Dictionary<string, List<Type>> groups = new();
             foreach (var type in types)
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using IRG.Graphs;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEditor;
@@ -15,7 +16,7 @@ namespace IRG.Editor
         public static string GetAssetPath(string path) => $"Assets/{path}.asset";
         public static string Combine(string folder, string fileName) => $"{folder}/{fileName}".Replace("//", "/");
 
-        public static T Load<T>(string path) where T : ScriptableObject
+        public static T Load<T>(string path) where T : Object
         {
             return AssetDatabase.LoadAssetAtPath<T>(GetAssetPath(path));
         }
@@ -25,7 +26,7 @@ namespace IRG.Editor
             return AssetDatabase.LoadAssetAtPath(GetAssetPath(path), type);
         }
         
-        public static IEnumerable<T> LoadAll<T>(string folder = "") where T : ScriptableObject
+        public static IEnumerable<T> LoadAll<T>(string folder = "") where T : Object
         {
             var list = new List<T>();
             var allPaths = FindAll<T>(folder);
@@ -47,7 +48,7 @@ namespace IRG.Editor
             return list;
         }
         
-        public static IEnumerable<string> FindAll<T>(string folder = "") where T : ScriptableObject
+        public static IEnumerable<string> FindAll<T>(string folder = "") where T : Object
         {
             return FindAll(typeof(T), folder);
         }
@@ -106,6 +107,14 @@ namespace IRG.Editor
             AssetDatabase.DeleteAsset(GetAssetPath(path));
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+        }
+        
+        public static void Save<T>(string path, T source) where T : ScriptableObject
+        {
+            T obj = Load<T>(path);
+            if (!obj) obj = Create<T>(path);
+            EditorUtility.CopySerialized(source, obj);
+            Save(obj);
         }
         
         public static void Save(Object obj)

@@ -52,6 +52,7 @@ namespace IRG.Graphs.Editor
             SetPosition(new Rect(pos, Vector2.zero));
             style.minWidth = 150;
             style.maxWidth = 300;
+            this.Q("contents").style.backgroundColor = Color.HSVToRGB(0f, 0f, 0.2f);
             OnInit();
         }
         
