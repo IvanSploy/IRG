@@ -52,7 +52,7 @@ namespace IRG.Graphs
             }
         }
 
-        public void LocalizePositions(Vector2 pos)
+        public void SetRelativePos(Vector2 pos)
         {
             Vector2 minPos;
             minPos.x = float.MaxValue;

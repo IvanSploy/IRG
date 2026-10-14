@@ -28,6 +28,7 @@ namespace IRG.Graphs.Editor
         private readonly Vector2 _copyOffset = new(1f, 1f);
 
         private Vector2 _mousePos;
+        private EditorWindow _windowContext;
         
         public Graph()
         {
@@ -51,12 +52,18 @@ namespace IRG.Graphs.Editor
 
             schedule.Execute(Initialize);
 
+            AssetsIO.OnAssetsRefreshed += RefreshState;
             Undo.undoRedoPerformed += RefreshState;
         }
 
         private void Initialize()
         {
             AddSearchWindow();
+        }
+
+        public void SetWindowContext(EditorWindow window)
+        {
+            _windowContext = window;
         }
 
         private void RegisterGroupCallbacks()
@@ -165,8 +172,8 @@ namespace IRG.Graphs.Editor
             unserializeAndPaste = (operationName, data) =>
             {
                 _copyGraphData.Isolate();
-                Vector2 pos = GetLocalMousePosition(_mousePos);
-                _copyGraphData.LocalizePositions(pos + _copyOffset);
+                Vector2 pos = WorldToLocal(_mousePos);
+                _copyGraphData.SetRelativePos(pos + _copyOffset);
                 DeSerialize(_copyGraphData);
             };
         }
@@ -212,7 +219,7 @@ namespace IRG.Graphs.Editor
 
         private bool OnSearchSelection(SearchTreeEntry entry, SearchWindowContext context)
         {
-            var pos = GetLocalMousePosition(context.screenMousePosition);
+            var pos = ScreenToLocal(context.screenMousePosition);
             Type type = (Type)entry.userData;
             GraphNode graphNode = CreateNode(type, pos);
             
@@ -248,7 +255,7 @@ namespace IRG.Graphs.Editor
         {
             _pendingEdge = edge;
             _pendingPort = _pendingEdge.input ?? _pendingEdge.output;
-            OpenSearchWindow(pos);
+            OpenSearchWindow(WorldToScreen(pos));
         }
 
         public void EndConnection()
@@ -348,6 +355,7 @@ namespace IRG.Graphs.Editor
         
         private void SerializeCopy(IEnumerable<GraphElement> elements)
         {
+            _copyGraphData.Clear();
             Serialize(_copyGraphData, elements);
         }
         
@@ -498,10 +506,42 @@ namespace IRG.Graphs.Editor
             return nodeElement;
         }
 
-        private Vector2 GetLocalMousePosition(Vector2 worldPos)
+        private Vector2 WorldToLocal(Vector2 worldPos)
         {
             var localPos = contentViewContainer.WorldToLocal(worldPos);
             return localPos;
+        }
+        
+        private Vector2 ScreenToLocal(Vector2 screenPos)
+        {
+            Vector2 worldPos = screenPos;
+            if (_windowContext)
+            {
+                worldPos -= _windowContext.position.position;
+            }
+            var localPos = contentViewContainer.WorldToLocal(worldPos);
+            return localPos;
+        }
+        
+        private Vector2 LocalToScreen(Vector2 localPos)
+        {
+            var worldPos = contentViewContainer.LocalToWorld(localPos);
+            Vector2 screenPos = worldPos;
+            if (_windowContext)
+            {
+                screenPos += _windowContext.position.position;
+            }
+            return screenPos;
+        }
+        
+        private Vector2 WorldToScreen(Vector2 worldPos)
+        {
+            Vector2 screenPos = worldPos;
+            if (_windowContext)
+            {
+                screenPos += _windowContext.position.position;
+            }
+            return screenPos;
         }
         
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
@@ -543,7 +583,7 @@ namespace IRG.Graphs.Editor
                     menuEvent.menu.AppendAction("Add Group",
                         action =>
                         {
-                            var group = CreateGroup("Group", GetLocalMousePosition(action.eventInfo.localMousePosition));
+                            var group = CreateGroup("Group", WorldToLocal(action.eventInfo.mousePosition));
                             
                             AddElement(group);
                             
@@ -567,7 +607,7 @@ namespace IRG.Graphs.Editor
                     menuEvent.menu.AppendAction(actionTitle,
                         action =>
                         {
-                            T node = CreateNode<T>(GetLocalMousePosition(action.eventInfo.localMousePosition));
+                            T node = CreateNode<T>(WorldToLocal(action.eventInfo.mousePosition));
                             AddElement(node);
 
                             //If group selected, add to group.

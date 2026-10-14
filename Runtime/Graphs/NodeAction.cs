@@ -46,15 +46,14 @@ namespace IRG.Graphs
         public virtual bool OnUpdate() => true;
         public virtual void OnEnd() { }
         
-        protected virtual string GetOutPortName() => "next";
+        protected virtual string Next => "next";
         
         public List<NodeAction> GetNextNodes()
         {
-            var portName = GetOutPortName();
-            _nextActions.TryGetValue(portName, out var next);
+            _nextActions.TryGetValue(Next, out var next);
             foreach (var pair in _nextActions)
             {
-                if(pair.Key == portName) continue;
+                if(pair.Key == Next) continue;
                 foreach (var nodeAction in pair.Value)
                 {
                     nodeAction.RemoveRequiredNode();

@@ -11,6 +11,8 @@ namespace IRG.Editor
 {
     public static class AssetsIO
     {
+        public static event Action OnAssetsRefreshed;
+        
         public static string GetDirectoryPath(string folder) => $"{Application.dataPath}/{folder}";
         public static string GetFilePath(string path) => $"{Application.dataPath}/{path}.asset";
         public static string GetAssetPath(string path) => $"Assets/{path}.asset";
@@ -98,15 +100,13 @@ namespace IRG.Editor
         public static void RenameAsset(string path, string newName)
         {
             AssetDatabase.RenameAsset(GetAssetPath(path), newName);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            Refresh();
         }
         
         public static void Remove(string path)
         {
             AssetDatabase.DeleteAsset(GetAssetPath(path));
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            Refresh();
         }
         
         public static void Save<T>(string path, T source) where T : ScriptableObject
@@ -120,8 +120,14 @@ namespace IRG.Editor
         public static void Save(Object obj)
         {
             EditorUtility.SetDirty(obj);
+            Refresh();
+        }
+
+        public static void Refresh()
+        {
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            OnAssetsRefreshed?.Invoke();
         }
         
         public static void CreateFolder(string folder)
