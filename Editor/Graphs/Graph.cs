@@ -61,7 +61,7 @@ namespace IRG.Graphs.Editor
             AddSearchWindow();
         }
 
-        public void SetWindowContext(EditorWindow window)
+        private void SetWindowContext(EditorWindow window)
         {
             _windowContext = window;
         }
@@ -266,6 +266,7 @@ namespace IRG.Graphs.Editor
 
         public void OpenSearchWindow(Vector2 pos)
         {
+            SetWindowContext(EditorWindow.focusedWindow);
             SearchWindow.Open(new SearchWindowContext(pos), _searchWindow);
         }
 
@@ -515,32 +516,16 @@ namespace IRG.Graphs.Editor
         private Vector2 ScreenToLocal(Vector2 screenPos)
         {
             Vector2 worldPos = screenPos;
-            if (_windowContext)
-            {
-                worldPos -= _windowContext.position.position;
-            }
+            if (_windowContext) worldPos -= _windowContext.position.position;
             var localPos = contentViewContainer.WorldToLocal(worldPos);
             return localPos;
         }
         
-        private Vector2 LocalToScreen(Vector2 localPos)
-        {
-            var worldPos = contentViewContainer.LocalToWorld(localPos);
-            Vector2 screenPos = worldPos;
-            if (_windowContext)
-            {
-                screenPos += _windowContext.position.position;
-            }
-            return screenPos;
-        }
-        
         private Vector2 WorldToScreen(Vector2 worldPos)
         {
+            SetWindowContext(EditorWindow.focusedWindow);
             Vector2 screenPos = worldPos;
-            if (_windowContext)
-            {
-                screenPos += _windowContext.position.position;
-            }
+            if (_windowContext) screenPos += _windowContext.position.position;
             return screenPos;
         }
         
