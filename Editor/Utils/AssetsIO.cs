@@ -113,6 +113,7 @@ namespace IRG.Editor
         {
             T obj = Load<T>(path);
             if (!obj) obj = Create<T>(path);
+            source.name = obj.name;
             EditorUtility.CopySerialized(source, obj);
             Save(obj);
         }
