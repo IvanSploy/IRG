@@ -18,15 +18,15 @@ namespace IRG.Graphs
             _timer = Data.Delay;
         }
 
-        public override bool OnUpdate()
+        public override void OnUpdate()
         {
             if (_timer <= 0)
             {
-                return true;
+                SetDone();
+                return;
             }
 
             _timer -= Time.deltaTime;
-            return false;
         }
     }
 }

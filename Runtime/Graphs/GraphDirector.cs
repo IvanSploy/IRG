@@ -56,7 +56,12 @@ namespace IRG.Graphs
                 current.AddReadyNode();
                 while (!current.IsReady) yield return null;
                 current.OnStart();
-                while(!current.OnUpdate()) yield return null;
+                if(!current.IsDone) current.OnUpdate();
+                while (!current.IsDone)
+                {
+                    yield return null;
+                    current.OnUpdate();
+                }
                 current.OnEnd();
                 var nextNodes = current.GetNextNodes();
                 current = null;
@@ -91,6 +96,9 @@ namespace IRG.Graphs
         private void Initialize()
         {
             if (!_graphData) return;
+            
+            _initialNode.Reset();
+            
             foreach (var nodeAction in _nodes.Values)
             {
                 nodeAction.Reset();

@@ -19,10 +19,14 @@ namespace IRG.Graphs
         private int _requiredNodes;
         public bool IsActive { get; private set; }
         public bool IsReady => _readyNodes == _requiredNodes;
+        public bool IsDone { get; private set; }
+        private string _outNode;
         
         public void Reset()
         {
             IsActive = false;
+            IsDone = false;
+            _outNode = "next";
             _readyNodes = 0;
             _requiredNodes = 0;
             _nextActions.Clear();
@@ -43,17 +47,15 @@ namespace IRG.Graphs
         public abstract void SetData(NodeData data);
         
         public virtual void OnStart() { }
-        public virtual bool OnUpdate() => true;
+        public virtual void OnUpdate() { }
         public virtual void OnEnd() { }
-        
-        protected virtual string Next => "next";
         
         public List<NodeAction> GetNextNodes()
         {
-            _nextActions.TryGetValue(Next, out var next);
+            _nextActions.TryGetValue(_outNode, out var next);
             foreach (var pair in _nextActions)
             {
-                if(pair.Key == Next) continue;
+                if(pair.Key == _outNode) continue;
                 foreach (var nodeAction in pair.Value)
                 {
                     nodeAction.RemoveRequiredNode();
@@ -73,6 +75,12 @@ namespace IRG.Graphs
                     nodeAction.RemoveRequiredNode();
                 }
             }
+        }
+
+        protected void SetDone(string outNode = null)
+        {
+            IsDone = true;
+            if(!string.IsNullOrEmpty(outNode)) _outNode = outNode;
         }
     }
 }
