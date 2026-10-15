@@ -29,6 +29,9 @@ namespace IRG.Graphs.Editor
 
         private Vector2 _mousePos;
         private EditorWindow _windowContext;
+
+        public bool IsDirty => UndoStack.Count != 0;
+        public event Action OnUndoRedo;
         
         public Graph()
         {
@@ -39,21 +42,16 @@ namespace IRG.Graphs.Editor
             RegisterDeleteSelection();
             RegisterGraphViewChanged();
             RegisterCopyPaste();
+            RegisterInputCallbacks();
                 
             AddManipulators();
             AddBackground();
             
             AddStyle();
-            
-            RegisterCallback<PointerMoveEvent>(evt =>
-            {
-                _mousePos = evt.position;
-            });
 
             schedule.Execute(Initialize);
 
             AssetsIO.OnAssetsRefreshed += RefreshState;
-            Undo.undoRedoPerformed += RefreshState;
         }
 
         private void Initialize()
@@ -70,9 +68,9 @@ namespace IRG.Graphs.Editor
         {
             groupTitleChanged = (group, newTitle) =>
             {
+                RecordState("Graph Group Title Changed");
                 GraphGroup cinematicGroup = (GraphGroup) group;
                 cinematicGroup.title = newTitle;
-                RecordState("Graph Group Title Changed");
             };
 
             elementsAddedToGroup = (group, elements) =>
@@ -100,12 +98,19 @@ namespace IRG.Graphs.Editor
         {
             deleteSelection = (s, b) =>
             {
+                bool removed = false;
                 foreach (var selectable in selection.ToList())
                 {
                     if(selectable is InitialNode) continue;
                     
                     if (selectable is GraphElement graphElement)
                     {
+                        if (!removed)
+                        {
+                            removed = true;
+                            RecordState("Graph Delete Selection");
+                        }
+                        
                         if (selectable is Edge edge)
                         {
                             edge.input.Disconnect(edge);
@@ -130,7 +135,6 @@ namespace IRG.Graphs.Editor
                         }
                     }
                 }
-                RecordState("Graph Delete Selection");
             };
         }
         
@@ -140,7 +144,7 @@ namespace IRG.Graphs.Editor
             {
                 if (changes.movedElements != null)
                 {
-                    RecordState("Graph Moved Elements");
+                    RecordPreviousState("Graph Moved Elements");
                 }
 
                 if (changes.elementsToRemove != null)
@@ -176,6 +180,31 @@ namespace IRG.Graphs.Editor
                 _copyGraphData.SetRelativePos(pos + _copyOffset);
                 DeSerialize(_copyGraphData);
             };
+        }
+
+        private void RegisterInputCallbacks()
+        {
+            RegisterCallback<PointerMoveEvent>(evt =>
+            {
+                _mousePos = evt.position;
+            });
+            
+            RegisterCallback<KeyDownEvent>(evt =>
+            {
+                if (!evt.ctrlKey) return;
+
+                bool performed = false;
+                switch (evt.keyCode)
+                {
+                    case KeyCode.Z:
+                        performed = evt.shiftKey ? Redo() : Undo();
+                        break;
+                    case KeyCode.Y:
+                        performed = Redo();
+                        break;
+                }
+                if(performed) evt.StopPropagation();
+            });
         }
 
         public void AddGroupedNode(GraphNode graphNode, GraphGroup group)
@@ -225,6 +254,7 @@ namespace IRG.Graphs.Editor
             
             if (graphNode == null) return false;
             
+            RecordState("Graph Created Element");
             AddElement(graphNode);
                     
             if (_pendingEdge == null) return true;
@@ -247,7 +277,7 @@ namespace IRG.Graphs.Editor
 
             AddElement(_pendingEdge);
             EndConnection();
-                    
+            
             return true;
         }
         
@@ -282,7 +312,6 @@ namespace IRG.Graphs.Editor
         {
             var graphGroup = new GraphGroup();
             graphGroup.Initialize(title, pos);
-            RecordState("Graph Created Group");
             return graphGroup;
         }
         
@@ -330,10 +359,11 @@ namespace IRG.Graphs.Editor
                 }
                 return false;
             }
+            EditorUtility.CopySerialized(graphData, _graphData);
+            ClearUndoRedo();
             
             Clear();
             DeSerialize(graphData);
-            schedule.Execute(() => schedule.Execute(() => RecordState("Graph Loaded")));
             return true;
         }
 
@@ -456,18 +486,84 @@ namespace IRG.Graphs.Editor
                 fromNode.RefreshPorts();
             }
         }
+        
+        #endregion
 
-        private void RecordState(string actionName)
+        #region UndoRedo
+        
+        public struct UndoRedoData
         {
-            //TODO: Implement inner UndoRedo system, to avoid using it like Unity does.
-            //if(_graphData.InitialNode != null) Undo.RecordObject(_graphData, actionName);
+            public string Name;
+            public string Data;
+
+            public UndoRedoData(string name, string data)
+            {
+                Name = name;
+                Data = data;
+            }
+        }
+
+        public readonly Stack<UndoRedoData> UndoStack = new();
+        public readonly Stack<UndoRedoData> RedoStack = new();
+
+        public void RecordState(string actionName = "Graph Value Changed")
+        {
             Serialize();
+            var data = EditorJsonUtility.ToJson(_graphData);
+            UndoStack.Push(new UndoRedoData(actionName, data));
+            RedoStack.Clear();
+            OnUndoRedo?.Invoke();
+        }
+        
+        private void RecordPreviousState(string actionName)
+        {
+            var data = EditorJsonUtility.ToJson(_graphData);
+            UndoStack.Push(new UndoRedoData(actionName, data));
+            RedoStack.Clear();
+            Serialize();
+            OnUndoRedo?.Invoke();
+        }
+        
+        private void RestoreState(string data)
+        {
+            EditorJsonUtility.FromJsonOverwrite(data, _graphData);
+            RefreshState();
+            OnUndoRedo?.Invoke();
+        }
+
+        public bool Undo()
+        {
+            if(UndoStack.Count == 0) return false;
+            var undo = UndoStack.Pop();
+            Serialize();
+            var currentSnapshot = EditorJsonUtility.ToJson(_graphData);
+            RedoStack.Push(new UndoRedoData(undo.Name, currentSnapshot));
+            RestoreState(undo.Data);
+            return true;
+        }
+
+        public bool Redo()
+        {
+            if(RedoStack.Count == 0) return false;
+            var redo = RedoStack.Pop();
+            Serialize();
+            var currentSnapshot = EditorJsonUtility.ToJson(_graphData);
+            UndoStack.Push(new UndoRedoData(redo.Name, currentSnapshot));
+            RestoreState(redo.Data);
+            return true;
+        }
+
+        private void ClearUndoRedo()
+        {
+            UndoStack.Clear();
+            RedoStack.Clear();
         }
         
         private void RefreshState()
         {
             Clear();
             DeSerialize(_graphData);
+            Focus(); //Avoid losing events.
         }
 
         #endregion
@@ -504,6 +600,7 @@ namespace IRG.Graphs.Editor
             {
                 nodeElement.Draw();
             }
+            
             return nodeElement;
         }
 
@@ -570,6 +667,7 @@ namespace IRG.Graphs.Editor
                         {
                             var group = CreateGroup("Group", WorldToLocal(action.eventInfo.mousePosition));
                             
+                            RecordState("Graph Created Group");
                             AddElement(group);
                             
                             foreach (var selectable in selection.ToList())
@@ -592,6 +690,7 @@ namespace IRG.Graphs.Editor
                     menuEvent.menu.AppendAction(actionTitle,
                         action =>
                         {
+                            RecordState("Graph Created Node");
                             T node = CreateNode<T>(WorldToLocal(action.eventInfo.mousePosition));
                             AddElement(node);
 

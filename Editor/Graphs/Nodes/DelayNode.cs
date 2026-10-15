@@ -19,7 +19,11 @@ namespace IRG.Graphs.Editor
                 label = "Delay Seconds",
                 value = Data.Delay,
             };
-            _delay.RegisterValueChangedCallback(evt => Data.Delay = evt.newValue);
+            _delay.RegisterValueChangedCallback(evt =>
+            {
+                _graph.RecordState();
+                Data.Delay = evt.newValue;
+            });
             extensionContainer.Add(_delay);
         }
     }
