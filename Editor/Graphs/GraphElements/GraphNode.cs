@@ -9,6 +9,8 @@ namespace IRG.Graphs.Editor
     public abstract class GraphNode<TData> : GraphNode where TData : NodeData, new()
     {
         protected TData Data = new();
+
+        protected Label _debugId;
         
         public override NodeData ToData()
         {
@@ -26,6 +28,21 @@ namespace IRG.Graphs.Editor
             Initialize(Data.Position, Data.ID);
             OnLoad();
         }
+        
+        protected override void OnDrawData()
+        {
+            if (Graph.IsDebug)
+            {
+                _debugId = new Label
+                {
+                    text = Data.ID
+                };
+                extensionContainer.Add(_debugId);
+            }
+            
+            OnDraw();
+        }
+        protected virtual void OnDraw(){}
     }
     
     public abstract class GraphNode : Node, IConvertible<NodeData>
@@ -102,12 +119,12 @@ namespace IRG.Graphs.Editor
                 OutputPorts.Add(outPort);
             }
 
-            OnDraw();
+            OnDrawData();
             
             RefreshExpandedState();
         }
         
-        protected virtual void OnDraw(){}
+        protected virtual void OnDrawData(){}
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {

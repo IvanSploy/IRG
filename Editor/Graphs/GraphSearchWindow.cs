@@ -53,7 +53,7 @@ namespace IRG.Graphs.Editor
                 groups.AddToList(groupName, type);
             }
 
-            string filterName = string.IsNullOrEmpty(_filter) ? "All" : _filter;
+            string filterName = string.IsNullOrEmpty(_filter) ? "All" : _filter.StartWithUpper();
             
             var entries = new List<SearchTreeEntry>
             {

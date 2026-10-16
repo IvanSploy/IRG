@@ -109,6 +109,14 @@ namespace IRG.Editor
             Refresh();
         }
         
+        public static T LoadOrCreate<T>(string path) where T : ScriptableObject
+        {
+            T obj = Load<T>(path);
+            if (!obj) obj = Create<T>(path);
+            return obj;
+        }
+        
+        [Obsolete("This method can generate issues when working with SerializeReference, copy data using the same object.")]
         public static void Save<T>(string path, T source) where T : ScriptableObject
         {
             T obj = Load<T>(path);

@@ -20,6 +20,17 @@ namespace IRG.Graphs
             Groups.Clear();
         }
 
+        public void CopyFrom(GraphData other)
+        {
+            InitialNode = other.InitialNode;
+            Nodes.Clear();
+            Nodes.AddRange(other.Nodes);
+            Edges.Clear();
+            Edges.AddRange(other.Edges);
+            Groups.Clear();
+            Groups.AddRange(other.Groups);
+        }
+
         public void Isolate()
         {
             InitialNode = null;

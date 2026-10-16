@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -21,6 +22,14 @@ namespace IRG
             int index = Mathf.Max(index1, index2) + 1;
             if (index <= 0) return path;
             return path[index..];
+        }
+        
+        public static string StartWithUpper(this string input)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append(input[0].ToString().ToUpper());
+            builder.Append(input[1..]);
+            return builder.ToString();
         }
         
         public static string ToSnakeCase(this string input)

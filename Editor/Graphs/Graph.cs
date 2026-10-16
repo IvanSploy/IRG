@@ -14,7 +14,25 @@ namespace IRG.Graphs.Editor
     [UxmlElement]
     public partial class Graph : GraphView
     {
+        public static readonly bool IsDebug = false;
+        
         [UxmlAttribute] public string Filter { get; set; } = "";
+
+        private bool _showUndoRedoHistory;
+
+        [UxmlAttribute]
+        public bool ShowUndoRedoHistory
+        {
+            get => _showUndoRedoHistory;
+            set
+            {
+                if (_showUndoRedoHistory == value) return;
+                _showUndoRedoHistory = value;
+                GraphHistory.SetDisplay(_showUndoRedoHistory);
+            }
+        }
+        
+        public GraphHistory GraphHistory { get; private set; }
 
         private readonly Dictionary<string, Dictionary<string, GraphNode>> _groupedNodes = new();
         private GraphSearchWindow _searchWindow;
@@ -31,8 +49,9 @@ namespace IRG.Graphs.Editor
         private EditorWindow _windowContext;
 
         public bool IsDirty => UndoStack.Count != 0;
-        public event Action OnUndoRedo;
-        
+
+        public override VisualElement contentContainer => this;
+
         public Graph()
         {
             _graphData = ScriptableObject.CreateInstance<GraphData>();
@@ -52,6 +71,11 @@ namespace IRG.Graphs.Editor
             schedule.Execute(Initialize);
 
             AssetsIO.OnAssetsRefreshed += RefreshState;
+
+            style.flexDirection = FlexDirection.Row;
+            GraphHistory = new GraphHistory();
+            Add(GraphHistory);
+            GraphHistory.SetDisplay(_showUndoRedoHistory);
         }
 
         private void Initialize()
@@ -304,7 +328,6 @@ namespace IRG.Graphs.Editor
         {
             var styleSheet = Resources.Load<StyleSheet>("GridBackground");
             styleSheets.Add(styleSheet);
-            
             style.flexGrow = 1f;
         }
         
@@ -339,7 +362,7 @@ namespace IRG.Graphs.Editor
             return AssetsIO.Create<GraphData>(folder).name;
         }
 
-        public bool Load(string folder, string fileName, bool displayPopUp = true)
+        public bool Load(string folder, string fileName)
         {
             if (string.IsNullOrEmpty(fileName)) 
                 throw new ArgumentNullException(nameof(fileName));
@@ -347,19 +370,16 @@ namespace IRG.Graphs.Editor
             GraphData graphData = AssetsIO.Load<GraphData>(AssetsIO.Combine(folder, fileName));
             if (!graphData)
             {
-                if (displayPopUp)
-                {
-                    EditorUtility.DisplayDialog(
-                        "Could not find the file!",
-                        "The file at the following path could not be found:\n\n" +
-                        $"\"Assets/{folder}/{fileName}\".\n\n" +
-                        "Make sure you chose the right file and it's placed at the folder path mentioned above.",
-                        "Okay"
-                    );
-                }
+                EditorUtility.DisplayDialog(
+                    "Could not find the file!",
+                    "The file at the following path could not be found:\n\n" +
+                    $"\"Assets/{folder}/{fileName}\".\n\n" +
+                    "Make sure you chose the right file and it's placed at the folder path mentioned above.",
+                    "Okay"
+                );
                 return false;
             }
-            EditorUtility.CopySerialized(graphData, _graphData);
+            _graphData.CopyFrom(graphData);
             ClearUndoRedo();
             
             Clear();
@@ -374,8 +394,10 @@ namespace IRG.Graphs.Editor
             
             string path = AssetsIO.Combine(folder, fileName);
             Serialize();
-            
-            AssetsIO.Save(path, _graphData);
+
+            var graph = AssetsIO.LoadOrCreate<GraphData>(path);
+            graph.CopyFrom(_graphData);
+            AssetsIO.Save(graph);
         }
 
         private void Serialize()
@@ -512,7 +534,7 @@ namespace IRG.Graphs.Editor
             var data = EditorJsonUtility.ToJson(_graphData);
             UndoStack.Push(new UndoRedoData(actionName, data));
             RedoStack.Clear();
-            OnUndoRedo?.Invoke();
+            RefreshUndoRedoHistory();
         }
         
         private void RecordPreviousState(string actionName)
@@ -521,14 +543,16 @@ namespace IRG.Graphs.Editor
             UndoStack.Push(new UndoRedoData(actionName, data));
             RedoStack.Clear();
             Serialize();
-            OnUndoRedo?.Invoke();
+            RefreshUndoRedoHistory();
         }
         
         private void RestoreState(string data)
         {
-            EditorJsonUtility.FromJsonOverwrite(data, _graphData);
+            var temp = ScriptableObject.CreateInstance<GraphData>();
+            EditorJsonUtility.FromJsonOverwrite(data, temp);
+            _graphData.CopyFrom(temp);
             RefreshState();
-            OnUndoRedo?.Invoke();
+            RefreshUndoRedoHistory();
         }
 
         public bool Undo()
@@ -557,6 +581,7 @@ namespace IRG.Graphs.Editor
         {
             UndoStack.Clear();
             RedoStack.Clear();
+            RefreshUndoRedoHistory();
         }
         
         private void RefreshState()
@@ -565,15 +590,34 @@ namespace IRG.Graphs.Editor
             DeSerialize(_graphData);
             Focus(); //Avoid losing events.
         }
+        
+        private void RefreshUndoRedoHistory()
+        {
+            var redoArray = RedoStack.ToArray();
+            var redoList = GraphHistory.RedoSource = new List<string>();
+            for (int i = redoArray.Length - 1; i >= 0; i--)
+            {
+                redoList.Add(redoArray[i].Name);
+            }
+            
+            var undoArray = UndoStack.ToArray();
+            var undoList = GraphHistory.UndoSource = new List<string>();
+            for (int i = 0; i < undoArray.Length; i++)
+            {
+                undoList.Add(undoArray[i].Name);
+            }
+            
+            GraphHistory.Rebuild();
+        }
 
         #endregion
         
         public InitialNode CreateInitialNode(InitialNodeData nodeData)
         {
             var initialNode = new InitialNode();
+            initialNode.SetGraphView(this);
             nodeData.ID = "initial_node";
             initialNode.FromData(nodeData);
-            initialNode.SetGraphView(this);
             initialNode.Draw();
             return initialNode;
         }
@@ -581,8 +625,8 @@ namespace IRG.Graphs.Editor
         public GraphNode CreateNode(NodeData nodeData)
         {
             var graphNode = GenericFactory<GraphNode>.Create(nodeData.GetType());
-            graphNode.FromData(nodeData);
             graphNode.SetGraphView(this);
+            graphNode.FromData(nodeData);
             graphNode.Draw();
             return graphNode;
         }

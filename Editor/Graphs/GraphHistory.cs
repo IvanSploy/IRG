@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -14,9 +13,6 @@ namespace IRG.Graphs.Editor
         public List<string> RedoSource { private get; set; }
         public List<string> UndoSource { private get; set; }
 
-        public event Action<int> OnUndo;
-        public event Action<int> OnRedo;
-
         public GraphHistory()
         {
             style.backgroundColor = Color.gray2;
@@ -27,22 +23,22 @@ namespace IRG.Graphs.Editor
             };
             Add(_redoList);
             
-            _redoList.style.borderLeftWidth = 5f;
+            _redoList.style.borderLeftWidth = 3f;
             _redoList.style.borderLeftColor = Color.red;
             _redoList.makeItem = () =>
             {
-                var button = new Button();
-                button.clicked += () =>
-                {
-                    var index = (int)button.userData;
-                    OnRedo?.Invoke(index);
-                };
-                return new Button();
+                var label = new Label();
+                label.style.color = Color.gray;
+                label.style.marginLeft = 5f;
+                label.style.unityTextAlign = TextAnchor.MiddleLeft;
+                label.style.flexGrow = 1f;
+                return label;
             };
             _redoList.bindItem = (ve, i) =>
             {
-                var button = (Button)ve;
-                button.text = RedoSource[i];
+                var label = (Label)ve;
+                label.userData = i;
+                label.text = RedoSource[i];
             };
             
             _undoList = new ListView()
@@ -52,22 +48,21 @@ namespace IRG.Graphs.Editor
             };
             Add(_undoList);
             
-            _undoList.style.borderTopWidth = 5f;
+            _undoList.style.borderTopWidth = 2f;
             _undoList.style.borderTopColor = Color.ghostWhite;
             _undoList.makeItem = () =>
             {
-                var button = new Button();
-                button.clicked += () =>
-                {
-                    var index = (int)button.userData;
-                    OnRedo?.Invoke(index);
-                };
-                return new Button();
+                var label = new Label();
+                label.style.marginLeft = 5f;
+                label.style.unityTextAlign = TextAnchor.MiddleLeft;
+                label.style.flexGrow = 1f;
+                return label;
             };
             _undoList.bindItem = (ve, i) =>
             {
-                var button = (Button)ve;
-                button.text = UndoSource[i];
+                var label = (Label)ve;
+                label.userData = i;
+                label.text = UndoSource[i];
             };
             
             _redoList.SetDisplay(false);
