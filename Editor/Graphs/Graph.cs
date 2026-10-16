@@ -45,6 +45,9 @@ namespace IRG.Graphs.Editor
         private readonly GraphData _copyGraphData;
         private readonly Vector2 _copyOffset = new(1f, 1f);
 
+        private bool _mousePressed;
+        private bool _markedMove = true;
+        private Vector2 _mouseClickPos;
         private Vector2 _mousePos;
         private EditorWindow _windowContext;
 
@@ -166,11 +169,6 @@ namespace IRG.Graphs.Editor
         {
             graphViewChanged = changes =>
             {
-                if (changes.movedElements != null)
-                {
-                    RecordPreviousState("Graph Moved Elements");
-                }
-
                 if (changes.elementsToRemove != null)
                 {
                     foreach (var graphElement in changes.elementsToRemove)
@@ -208,9 +206,28 @@ namespace IRG.Graphs.Editor
 
         private void RegisterInputCallbacks()
         {
+            RegisterCallback<PointerDownEvent>(evt =>
+            {
+                _mouseClickPos = evt.position;
+                _mousePressed = true;
+                _markedMove = selection.Count == 0;
+            });
+            
+            RegisterCallback<PointerUpEvent>(evt =>
+            {
+                _mousePressed = false;
+                _markedMove = false;
+            });
+            
             RegisterCallback<PointerMoveEvent>(evt =>
             {
                 _mousePos = evt.position;
+
+                if (!_markedMove && _mousePressed && Vector2.Distance(_mousePos, _mouseClickPos) > 1f)
+                {
+                    _markedMove = true;
+                    RecordState("Element Moved");
+                }
             });
             
             RegisterCallback<KeyDownEvent>(evt =>
@@ -379,12 +396,18 @@ namespace IRG.Graphs.Editor
                 );
                 return false;
             }
+
+            Load(graphData);
+            return true;
+        }
+
+        public void Load(GraphData graphData)
+        {
             _graphData.CopyFrom(graphData);
             ClearUndoRedo();
             
             Clear();
             DeSerialize(graphData);
-            return true;
         }
 
         public void Save(string folder, string fileName)
@@ -393,11 +416,15 @@ namespace IRG.Graphs.Editor
                 throw new ArgumentNullException(nameof(fileName));
             
             string path = AssetsIO.Combine(folder, fileName);
-            Serialize();
-
             var graph = AssetsIO.LoadOrCreate<GraphData>(path);
-            graph.CopyFrom(_graphData);
-            AssetsIO.Save(graph);
+            Save(graph);
+        }
+
+        public void Save(GraphData graphData)
+        {
+            Serialize();
+            graphData.CopyFrom(_graphData);
+            AssetsIO.Save(graphData);
         }
 
         private void Serialize()
@@ -534,15 +561,6 @@ namespace IRG.Graphs.Editor
             var data = EditorJsonUtility.ToJson(_graphData);
             UndoStack.Push(new UndoRedoData(actionName, data));
             RedoStack.Clear();
-            RefreshUndoRedoHistory();
-        }
-        
-        private void RecordPreviousState(string actionName)
-        {
-            var data = EditorJsonUtility.ToJson(_graphData);
-            UndoStack.Push(new UndoRedoData(actionName, data));
-            RedoStack.Clear();
-            Serialize();
             RefreshUndoRedoHistory();
         }
         

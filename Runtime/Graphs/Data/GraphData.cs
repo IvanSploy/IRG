@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace IRG.Graphs
 {
+    [CreateAssetMenu(fileName = "Graph", menuName = "Graphs/Graph")]
     public class GraphData : ScriptableObject
     {
         public InitialNodeData InitialNode;
