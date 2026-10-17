@@ -12,17 +12,7 @@ namespace IRG.Graphs.Editor
 
         protected Label _debugId;
         
-        public override NodeData ToData()
-        {
-            OnSave();
-            var copy = Data.Clone();
-            copy.ID = ID;
-            copy.Position = GetPosition().position;
-            copy.GroupID = Group?.ID;
-            return copy;
-        }
-        
-        public override void FromData(NodeData nodeData)
+        public sealed override void FromData(NodeData nodeData)
         {
             Data = (TData)nodeData.Clone();
             Initialize(Data.Position, Data.ID);
@@ -43,6 +33,16 @@ namespace IRG.Graphs.Editor
             OnDraw();
         }
         protected virtual void OnDraw(){}
+        
+        public sealed override NodeData ToData()
+        {
+            OnSave();
+            var copy = Data.Clone();
+            copy.ID = ID;
+            copy.Position = GetPosition().position;
+            copy.GroupID = Group?.ID;
+            return copy;
+        }
     }
     
     public abstract class GraphNode : Node, IConvertible<NodeData>

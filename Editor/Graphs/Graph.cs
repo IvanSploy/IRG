@@ -95,7 +95,7 @@ namespace IRG.Graphs.Editor
         {
             groupTitleChanged = (group, newTitle) =>
             {
-                RecordState("Graph Group Title Changed");
+                RecordState("Group Title Changed");
                 GraphGroup cinematicGroup = (GraphGroup) group;
                 cinematicGroup.title = newTitle;
             };
@@ -135,7 +135,7 @@ namespace IRG.Graphs.Editor
                         if (!removed)
                         {
                             removed = true;
-                            RecordState("Graph Delete Selection");
+                            RecordState("Delete Selection");
                         }
                         
                         if (selectable is Edge edge)
@@ -169,6 +169,11 @@ namespace IRG.Graphs.Editor
         {
             graphViewChanged = changes =>
             {
+                if (changes.edgesToCreate is { Count: > 0 })
+                {
+                    RecordState("Edge Created");
+                }
+                
                 if (changes.elementsToRemove != null)
                 {
                     foreach (var graphElement in changes.elementsToRemove)
@@ -295,7 +300,7 @@ namespace IRG.Graphs.Editor
             
             if (graphNode == null) return false;
             
-            RecordState("Graph Created Element");
+            RecordState("Created Element");
             AddElement(graphNode);
                     
             if (_pendingEdge == null) return true;
@@ -459,6 +464,8 @@ namespace IRG.Graphs.Editor
                     } break;
                     case Edge edge:
                     {
+                        if(!edge.IsFullyConnected()) continue;
+                        
                         var fromNode = (GraphNode)edge.output.node;
                         var fromPortID = edge.output.GetID();
                         var toNode = (GraphNode)edge.input.node;
@@ -555,7 +562,7 @@ namespace IRG.Graphs.Editor
         public readonly Stack<UndoRedoData> UndoStack = new();
         public readonly Stack<UndoRedoData> RedoStack = new();
 
-        public void RecordState(string actionName = "Graph Value Changed")
+        public void RecordState(string actionName = "Value Changed")
         {
             Serialize();
             var data = EditorJsonUtility.ToJson(_graphData);
@@ -729,7 +736,7 @@ namespace IRG.Graphs.Editor
                         {
                             var group = CreateGroup("Group", WorldToLocal(action.eventInfo.mousePosition));
                             
-                            RecordState("Graph Created Group");
+                            RecordState("Created Group");
                             AddElement(group);
                             
                             foreach (var selectable in selection.ToList())
@@ -752,7 +759,7 @@ namespace IRG.Graphs.Editor
                     menuEvent.menu.AppendAction(actionTitle,
                         action =>
                         {
-                            RecordState("Graph Created Node");
+                            RecordState("Created Node");
                             T node = CreateNode<T>(WorldToLocal(action.eventInfo.mousePosition));
                             AddElement(node);
 
