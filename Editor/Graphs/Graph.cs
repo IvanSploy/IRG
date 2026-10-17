@@ -19,9 +19,7 @@ namespace IRG.Graphs.Editor
         [UxmlAttribute] public string Filter { get; set; } = "";
 
         private bool _showUndoRedoHistory;
-
-        [UxmlAttribute]
-        public bool ShowUndoRedoHistory
+        [UxmlAttribute] public bool ShowUndoRedoHistory
         {
             get => _showUndoRedoHistory;
             set
@@ -34,6 +32,7 @@ namespace IRG.Graphs.Editor
         
         public GraphHistory GraphHistory { get; private set; }
 
+        private readonly InitialNode _initialNode;
         private readonly Dictionary<string, Dictionary<string, GraphNode>> _groupedNodes = new();
         private GraphSearchWindow _searchWindow;
 
@@ -57,6 +56,8 @@ namespace IRG.Graphs.Editor
 
         public Graph()
         {
+            _initialNode = CreateInitialNode();
+            
             _graphData = ScriptableObject.CreateInstance<GraphData>();
             _copyGraphData = ScriptableObject.CreateInstance<GraphData>();
             
@@ -70,25 +71,20 @@ namespace IRG.Graphs.Editor
             AddBackground();
             
             AddStyle();
-
-            schedule.Execute(Initialize);
-
+            
             AssetsIO.OnAssetsRefreshed += RefreshState;
 
             style.flexDirection = FlexDirection.Row;
             GraphHistory = new GraphHistory();
             Add(GraphHistory);
             GraphHistory.SetDisplay(_showUndoRedoHistory);
+            
+            schedule.Execute(Initialize);
         }
 
         private void Initialize()
         {
             AddSearchWindow();
-        }
-
-        private void SetWindowContext(EditorWindow window)
-        {
-            _windowContext = window;
         }
 
         private void RegisterGroupCallbacks()
@@ -370,6 +366,7 @@ namespace IRG.Graphs.Editor
         public new void Clear()
         {
             DeleteElements(graphElements);
+            AddElement(_initialNode);
         }
 
         public void ClearAll()
@@ -452,7 +449,12 @@ namespace IRG.Graphs.Editor
                 {
                     case InitialNode initialNode:
                     {
-                        graphData.InitialNode = (InitialNodeData)initialNode.ToData();
+                        graphData.InitialNode = new InitialNodeData
+                        {
+                            ID = initialNode.ID,
+                            GroupID = initialNode.Group?.ID,
+                            Position = initialNode.GetPosition().position
+                        };
                     } break;
                     case GraphNode node:
                     {
@@ -495,15 +497,14 @@ namespace IRG.Graphs.Editor
             var graphNodes = new Dictionary<string, GraphNode>();
             if(graphData.InitialNode != null)
             {
-                var graphNode = CreateInitialNode(graphData.InitialNode);
-                AddElement(graphNode);
-                graphNodes[graphNode.ID] = graphNode;
+                _initialNode.SetPosition(new Rect(graphData.InitialNode.Position, Vector2.zero));
+                graphNodes[_initialNode.ID] = _initialNode;
 
                 if (!string.IsNullOrEmpty(graphData.InitialNode.GroupID))
                 {
                     GraphGroup group = groups[graphData.InitialNode.GroupID];
-                    graphNode.Group = group;
-                    group.AddElement(graphNode);
+                    _initialNode.Group = group;
+                    group.AddElement(_initialNode);
                 }
             }
             
@@ -637,12 +638,11 @@ namespace IRG.Graphs.Editor
 
         #endregion
         
-        public InitialNode CreateInitialNode(InitialNodeData nodeData)
+        public InitialNode CreateInitialNode()
         {
             var initialNode = new InitialNode();
             initialNode.SetGraphView(this);
-            nodeData.ID = "initial_node";
-            initialNode.FromData(nodeData);
+            initialNode.Initialize(Vector2.zero, "initial_node");
             initialNode.Draw();
             return initialNode;
         }
@@ -693,6 +693,11 @@ namespace IRG.Graphs.Editor
             Vector2 screenPos = worldPos;
             if (_windowContext) screenPos += _windowContext.position.position;
             return screenPos;
+        }
+        
+        private void SetWindowContext(EditorWindow window)
+        {
+            _windowContext = window;
         }
         
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)

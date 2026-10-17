@@ -19,7 +19,7 @@ namespace IRG.Graphs.Editor
             OnLoad();
         }
         
-        protected override void OnDrawData()
+        protected sealed override void OnDrawNode()
         {
             if (Graph.IsDebug)
             {
@@ -33,7 +33,7 @@ namespace IRG.Graphs.Editor
             OnDraw();
         }
         protected virtual void OnDraw(){}
-        
+
         public sealed override NodeData ToData()
         {
             OnSave();
@@ -72,8 +72,8 @@ namespace IRG.Graphs.Editor
             this.Q("contents").style.backgroundColor = Color.HSVToRGB(0f, 0f, 0.2f);
             OnInit();
         }
-        
         protected virtual void OnInit(){}
+        
         protected virtual void OnLoad(){}
         protected virtual void OnSave(){}
 
@@ -119,12 +119,12 @@ namespace IRG.Graphs.Editor
                 OutputPorts.Add(outPort);
             }
 
-            OnDrawData();
+            OnDrawNode();
             
             RefreshExpandedState();
         }
         
-        protected virtual void OnDrawData(){}
+        protected virtual void OnDrawNode(){}
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
@@ -185,7 +185,7 @@ namespace IRG.Graphs.Editor
             return port;
         }
 
-        public abstract NodeData ToData();
-        public abstract void FromData(NodeData data);
+        public virtual NodeData ToData() => null;
+        public virtual void FromData(NodeData data) {}
     }
 }

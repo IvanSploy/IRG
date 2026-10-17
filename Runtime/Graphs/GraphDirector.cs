@@ -12,12 +12,12 @@ namespace IRG.Graphs
         private readonly List<Coroutine> _threads = new();
         private int _finishedThreads;
         
-        private GraphData _graphData;
+        private GraphData _currentGraph;
 
         public void Load(GraphData graphData)
         {
             if (!graphData) return;
-            _graphData = graphData;
+            _currentGraph = graphData;
             CreateNodes();
             RePlay();
         }
@@ -85,7 +85,7 @@ namespace IRG.Graphs
             _initialNode = new InitialNodeAction();
             
             _nodes.Clear();
-            foreach (var nodeData in _graphData.Nodes)
+            foreach (var nodeData in _currentGraph.Nodes)
             {
                 var node = GenericFactory<NodeAction>.Create(nodeData.GetType());
                 node.SetData(nodeData);
@@ -95,7 +95,7 @@ namespace IRG.Graphs
 
         private void Initialize()
         {
-            if (!_graphData) return;
+            if (!_currentGraph) return;
             
             _initialNode.Reset();
             
@@ -104,7 +104,7 @@ namespace IRG.Graphs
                 nodeAction.Reset();
             }
             
-            foreach (var edgeData in _graphData.Edges)
+            foreach (var edgeData in _currentGraph.Edges)
             {
                 var fromNode = edgeData.FromNodeID == "initial_node" ? _initialNode : _nodes[edgeData.FromNodeID];
                 var toNode = _nodes[edgeData.ToNodeID];
