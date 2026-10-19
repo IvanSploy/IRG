@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace IRG.Graphs.Editor
 {
-    public sealed class GraphGroup : Group, IConvertible<GroupData>
+    public sealed class GraphGroup : Group
     {
         public string ID { get; private set; }
 

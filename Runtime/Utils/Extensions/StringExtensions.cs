@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -30,6 +31,12 @@ namespace IRG
             builder.Append(input[0].ToString().ToUpper());
             builder.Append(input[1..]);
             return builder.ToString();
+        }
+        
+        public static string RemoveFromEnd(this string input, string remove)
+        {
+            int index = input.LastIndexOf(remove, StringComparison.OrdinalIgnoreCase);
+            return input[..index];
         }
         
         public static string ToSnakeCase(this string input)

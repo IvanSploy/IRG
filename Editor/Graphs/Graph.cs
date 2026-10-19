@@ -7,7 +7,6 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Edge = UnityEditor.Experimental.GraphView.Edge;
-using Node = UnityEditor.Experimental.GraphView.Node;
 
 namespace IRG.Graphs.Editor
 {
@@ -32,7 +31,7 @@ namespace IRG.Graphs.Editor
         
         public GraphHistory GraphHistory { get; private set; }
 
-        private readonly InitialNode _initialNode;
+        private readonly GraphNode _initialNode;
         private readonly Dictionary<string, Dictionary<string, GraphNode>> _groupedNodes = new();
         private GraphSearchWindow _searchWindow;
 
@@ -57,6 +56,7 @@ namespace IRG.Graphs.Editor
         public Graph()
         {
             _initialNode = CreateInitialNode();
+            AddElement(_initialNode);
             
             _graphData = ScriptableObject.CreateInstance<GraphData>();
             _copyGraphData = ScriptableObject.CreateInstance<GraphData>();
@@ -124,8 +124,6 @@ namespace IRG.Graphs.Editor
                 bool removed = false;
                 foreach (var selectable in selection.ToList())
                 {
-                    if(selectable is InitialNode) continue;
-                    
                     if (selectable is GraphElement graphElement)
                     {
                         if (!removed)
@@ -140,8 +138,9 @@ namespace IRG.Graphs.Editor
                             edge.output.Disconnect(edge);
                         }
 
-                        if (selectable is Node node)
+                        if (selectable is GraphNode node)
                         {
+                            if (node.ID == "initial_node") continue;
                             DeleteElements(node.GetConnectedEdges());
                         }
                         RemoveElement(graphElement);
@@ -209,6 +208,7 @@ namespace IRG.Graphs.Editor
         {
             RegisterCallback<PointerDownEvent>(evt =>
             {
+                if (evt.button != 0) return;
                 _mouseClickPos = evt.position;
                 _mousePressed = true;
                 _markedMove = selection.Count == 0;
@@ -216,6 +216,7 @@ namespace IRG.Graphs.Editor
             
             RegisterCallback<PointerUpEvent>(evt =>
             {
+                if (evt.button != 0) return;
                 _mousePressed = false;
                 _markedMove = false;
             });
@@ -279,7 +280,7 @@ namespace IRG.Graphs.Editor
         private void AddSearchWindow()
         {
             _searchWindow = ScriptableObject.CreateInstance<GraphSearchWindow>();
-            _searchWindow.Initialize(typeof(GraphNode), Filter, OnSearchSelection);
+            _searchWindow.Init(Filter, OnSearchSelection);
 
             nodeCreationRequest = context =>
             {
@@ -403,13 +404,23 @@ namespace IRG.Graphs.Editor
             return true;
         }
 
+        private bool _failed;
         public void Load(GraphData graphData)
         {
-            _graphData.CopyFrom(graphData);
-            ClearUndoRedo();
+            try
+            {
+                _failed = false;
+                _graphData.CopyFrom(graphData);
+                ClearUndoRedo();
             
-            Clear();
-            DeSerialize(graphData);
+                Clear();
+                DeSerialize(graphData);
+            }
+            catch(Exception e)
+            {
+                _failed = true;
+                Debug.LogException(e);
+            }
         }
 
         public void Save(string folder, string fileName)
@@ -424,6 +435,7 @@ namespace IRG.Graphs.Editor
 
         public void Save(GraphData graphData)
         {
+            if(_failed) return;
             Serialize();
             graphData.CopyFrom(_graphData);
             AssetsIO.Save(graphData);
@@ -447,18 +459,21 @@ namespace IRG.Graphs.Editor
             {
                 switch (graphElement)
                 {
-                    case InitialNode initialNode:
-                    {
-                        graphData.InitialNode = new InitialNodeData
-                        {
-                            ID = initialNode.ID,
-                            GroupID = initialNode.Group?.ID,
-                            Position = initialNode.GetPosition().position
-                        };
-                    } break;
                     case GraphNode node:
                     {
-                        graphData.Nodes.Add(node.ToData());
+                        if (node.IsInitialNode)
+                        {
+                            graphData.InitialNode = new InitialNodeData
+                            {
+                                ID = node.ID,
+                                GroupID = node.Group?.ID,
+                                Position = node.GetPosition().position
+                            };
+                        }
+                        else
+                        {
+                            graphData.Nodes.Add(node.Serialize());
+                        }
                     } break;
                     case GraphGroup group: 
                     { 
@@ -637,40 +652,35 @@ namespace IRG.Graphs.Editor
         }
 
         #endregion
-        
-        public InitialNode CreateInitialNode()
+
+        public GraphNode CreateInitialNode()
         {
-            var initialNode = new InitialNode();
-            initialNode.SetGraphView(this);
-            initialNode.Initialize(Vector2.zero, "initial_node");
+            var initialNode = new GraphNode(this);
+            GraphNodeContext ctx = GraphNodeContext.Default();
+            ctx.Title = "Start";
+            ctx.HeaderColor = Color.softRed;
+            ctx.HasInput = false;
+            ctx.MinWidth = 100f;
+            ctx.MaxWidth = 100f;
+            initialNode.Init(ctx, Vector2.zero, "initial_node");
             initialNode.Draw();
             return initialNode;
         }
         
-        public GraphNode CreateNode(NodeData nodeData)
+        private GraphNode CreateNode(Type type, Vector2 pos)
         {
-            var graphNode = GenericFactory<GraphNode>.Create(nodeData.GetType());
-            graphNode.SetGraphView(this);
-            graphNode.FromData(nodeData);
+            var graphNode = new GraphNode(this);
+            graphNode.Init(type, pos);
             graphNode.Draw();
             return graphNode;
         }
-
-        private T CreateNode<T>(Vector2 pos, bool shouldDraw = true) where T : GraphNode => CreateNode(typeof(T), pos, shouldDraw) as T;
-
-        private GraphNode CreateNode(Type type, Vector2 pos, bool shouldDraw = true)
+        
+        public GraphNode CreateNode(NodeData nodeData)
         {
-            var element = Activator.CreateInstance(type);
-            if (element is not GraphNode nodeElement) return null;
-            
-            nodeElement.SetGraphView(this);
-            nodeElement.Initialize(pos);
-            if (shouldDraw)
-            {
-                nodeElement.Draw();
-            }
-            
-            return nodeElement;
+            var graphNode = new GraphNode(this);
+            graphNode.Init(nodeData);
+            graphNode.Draw();
+            return graphNode;
         }
 
         private Vector2 WorldToLocal(Vector2 worldPos)
@@ -726,9 +736,14 @@ namespace IRG.Graphs.Editor
             this.AddManipulator(CreateGroupContextualMenu());
         }
 
-        public void AddNodeToMenu<T>(string title) where T : GraphNode
+        public void AddNodeToMenu<T>(string title) where T : NodeData
         {
-            this.AddManipulator(CreateNodeContextualMenu<T>(title));
+            AddNodeToMenu(typeof(T), title);
+        }
+        
+        public void AddNodeToMenu(Type type, string title)
+        {
+            this.AddManipulator(CreateNodeContextualMenu(type, title));
         }
         
         private IManipulator CreateGroupContextualMenu()
@@ -756,7 +771,7 @@ namespace IRG.Graphs.Editor
             );
         }
 
-        private IManipulator CreateNodeContextualMenu<T>(string actionTitle) where T : GraphNode
+        private IManipulator CreateNodeContextualMenu(Type type, string actionTitle)
         {
             return new ContextualMenuManipulator(
                 menuEvent =>
@@ -765,7 +780,7 @@ namespace IRG.Graphs.Editor
                         action =>
                         {
                             RecordState("Created Node");
-                            T node = CreateNode<T>(WorldToLocal(action.eventInfo.mousePosition));
+                            GraphNode node = CreateNode(type, WorldToLocal(action.eventInfo.mousePosition));
                             AddElement(node);
 
                             //If group selected, add to group.

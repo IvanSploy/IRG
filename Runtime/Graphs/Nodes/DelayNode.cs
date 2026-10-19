@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace IRG.Graphs
 {
-    [Serializable]
+    [GraphNode("Delay", Color = "dodgerBlue", Group = "Time"), Serializable]
     public class DelayData : NodeData
     {
         public float Delay;

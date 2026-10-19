@@ -11,13 +11,11 @@ namespace IRG.Graphs.Editor
     public class GraphSearchWindow : ScriptableObject, ISearchWindowProvider
     {
         private Texture2D _indentIcon;
-        private Type _type;
         private string _filter;
         private Func<SearchTreeEntry, SearchWindowContext, bool> _onSelect;
 
-        public void Initialize(Type type, string filter, Func<SearchTreeEntry, SearchWindowContext, bool> onSelect)
+        public void Init(string filter, Func<SearchTreeEntry, SearchWindowContext, bool> onSelect)
         {
-            _type = type;
             _filter = filter.ToLowerInvariant();
             _onSelect = onSelect;
             
@@ -28,7 +26,7 @@ namespace IRG.Graphs.Editor
         
         public List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
         {
-            var types = TypeCache.GetTypesDerivedFrom(_type).Where(type => !type.IsAbstract).ToList();
+            var types = TypeCache.GetTypesDerivedFrom(typeof(NodeData)).Where(type => !type.IsAbstract).ToList();
             types.Sort((item1, item2) =>
                 String.Compare(item1.Name, item2.Name, StringComparison.InvariantCulture));
 
@@ -36,7 +34,7 @@ namespace IRG.Graphs.Editor
             Dictionary<string, List<Type>> groups = new();
             foreach (var type in types)
             {
-                if(type == typeof(InitialNode)) continue;
+                if(type == typeof(InitialNodeData)) continue;
 
                 var graphNodeAttr = type.GetCustomAttribute<GraphNodeAttribute>();
                 if (graphNodeAttr == null)

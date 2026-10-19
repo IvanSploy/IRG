@@ -6,101 +6,78 @@ using UnityEngine.UIElements;
 
 namespace IRG.Graphs.Editor
 {
-    public abstract class GraphNode<TData> : GraphNode where TData : NodeData, new()
+    public sealed class GraphNode : Node
     {
-        protected TData Data = new();
-
-        protected Label _debugId;
-        
-        public sealed override void FromData(NodeData nodeData)
-        {
-            Data = (TData)nodeData.Clone();
-            Initialize(Data.Position, Data.ID);
-            OnLoad();
-        }
-        
-        protected sealed override void OnDrawNode()
-        {
-            if (Graph.IsDebug)
-            {
-                _debugId = new Label
-                {
-                    text = Data.ID
-                };
-                extensionContainer.Add(_debugId);
-            }
-            
-            OnDraw();
-        }
-        protected virtual void OnDraw(){}
-
-        public sealed override NodeData ToData()
-        {
-            OnSave();
-            var copy = Data.Clone();
-            copy.ID = ID;
-            copy.Position = GetPosition().position;
-            copy.GroupID = Group?.ID;
-            return copy;
-        }
-    }
-    
-    public abstract class GraphNode : Node, IConvertible<NodeData>
-    {
-        protected Graph _graph;
+        private readonly Graph _graph;
+        private NodeData _data;
+        private GraphNodeContext _context;
         
         public string ID { get; private set; }
+        public bool IsInitialNode => ID == "initial_node";
         public GraphGroup Group { get; set; }
         public Port InputPort { get; private set; }
         public List<Port> OutputPorts { get; } = new();
 
-        protected virtual bool HasInput => true;
-        protected virtual bool HasOutput => true;
-
         private Label _title;
-
-        protected abstract string GetTitle();
-        protected virtual Color TitleColor => Color.white;
-        protected virtual Color HeaderColor => Color.black;
         
-        public void Initialize(Vector2 pos, string id = null)
-        {
-            ID = string.IsNullOrEmpty(id) ? Guid.NewGuid().ToString() : id;
-            SetPosition(new Rect(pos, Vector2.zero));
-            style.minWidth = 150;
-            style.maxWidth = 300;
-            this.Q("contents").style.backgroundColor = Color.HSVToRGB(0f, 0f, 0.2f);
-            OnInit();
-        }
-        protected virtual void OnInit(){}
-        
-        protected virtual void OnLoad(){}
-        protected virtual void OnSave(){}
-
-        public void SetGraphView(Graph graph)
+        public GraphNode(Graph graph)
         {
             _graph = graph;
         }
+        
+        public void Init(GraphNodeContext context, Vector2 pos, string id = null)
+        {
+            _context = context;
+            ID = string.IsNullOrEmpty(id) ? Guid.NewGuid().ToString() : id;
+            SetPosition(new Rect(pos, Vector2.zero));
+            OnInit?.Invoke();
+        }
+        
+        public void Init(Type type, Vector2 pos, string id = null)
+        {
+            Init(GraphNodeContext.Get(type), pos, id);
+            _data = (NodeData)Activator.CreateInstance(type);
+            Serialize(_data);
+            OnLoad?.Invoke();
+        }
+        
+        public void Init(NodeData data)
+        {
+            Init(GraphNodeContext.Get(data.GetType()), data.Position, data.ID);
+            _data = data.Clone();
+            OnLoad?.Invoke();
+        }
+        
+        public event Action OnInit;
+
+        public event Action OnLoad;
+        public event Action OnSave;
 
         public void Draw()
         {
+            this.Q("node-border").style.flexShrink = 0f;
+            this.Q("contents").style.backgroundColor = Color.HSVToRGB(0f, 0f, 0.2f);
+            
+            style.minWidth = _context.MinWidth;
+            style.maxWidth = _context.MaxWidth;
+            
             /* Title Container */
-            _title = new Label($"  {GetTitle()}");
+            _title = new Label($"  {_context.Title}");
             _title.style.flexGrow = 1f;
             _title.style.unityTextAlign = TextAnchor.MiddleLeft;
             _title.style.unityFontStyleAndWeight = FontStyle.Bold;
             _title.style.marginLeft = 5;
-            _title.style.color = TitleColor;
+            _title.style.color = _context.TitleColor;
             TextShadow textShadow = new TextShadow();
             textShadow.color = Color.black;
             textShadow.offset = Vector2.left;
             _title.style.textShadow = textShadow;
             
             titleContainer.Insert(0, _title);
-            titleContainer.style.backgroundColor = HeaderColor;
+            titleContainer.style.backgroundColor = _context.HeaderColor;
 
             /* Top Container */
-            if (HasInput)
+            if (_context.HasInput)
             {
                 InputPort = CreatePort("In", direction: Direction.Input);
                 InputPort.SetID("In");
@@ -109,7 +86,7 @@ namespace IRG.Graphs.Editor
             }
             
             /* Output Container */
-            if (HasOutput)
+            if (_context.HasOutput)
             {
                 var portID = "next";
                 Port outPort = CreatePort("Next");
@@ -119,12 +96,23 @@ namespace IRG.Graphs.Editor
                 OutputPorts.Add(outPort);
             }
 
-            OnDrawNode();
+            OnDrawData();
             
             RefreshExpandedState();
         }
-        
-        protected virtual void OnDrawNode(){}
+
+        private void OnDrawData()
+        {
+            if (_data == null) return;
+            var drawers = NodeFieldDrawerFactory.GetDrawers(_data);
+            foreach (var drawer in drawers)
+            {
+                if(drawer.IsDebug && !Graph.IsDebug) continue;
+                var ve = drawer.Build();
+                extensionContainer.Add(ve);
+                drawer.OnBeforeValueChanged += () => _graph.RecordState();
+            }
+        }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
@@ -160,9 +148,8 @@ namespace IRG.Graphs.Editor
         {
             DisconnectPorts(outputContainer);
         }
-        
 
-        protected void DisconnectPorts(VisualElement visualElement)
+        private void DisconnectPorts(VisualElement visualElement)
         {
             var edges = new List<Edge>();
             foreach (var child in visualElement.Children())
@@ -176,7 +163,7 @@ namespace IRG.Graphs.Editor
             _graph.DeleteElements(edges);
         }
         
-        protected Port CreatePort(string text = "", Orientation orientation = Orientation.Horizontal,
+        private Port CreatePort(string text = "", Orientation orientation = Orientation.Horizontal,
             Direction direction = Direction.Output, Port.Capacity capacity = Port.Capacity.Multi)
         {
             Port port = InstantiatePort(orientation, direction, capacity, typeof(bool));
@@ -185,7 +172,18 @@ namespace IRG.Graphs.Editor
             return port;
         }
 
-        public virtual NodeData ToData() => null;
-        public virtual void FromData(NodeData data) {}
+        public NodeData Serialize()
+        {
+            OnSave?.Invoke();
+            Serialize(_data);
+            return _data.Clone();
+        }
+        
+        private void Serialize(NodeData data)
+        {
+            data.ID = ID;
+            data.Position = GetPosition().position;
+            data.GroupID = Group?.ID;
+        }
     }
 }
