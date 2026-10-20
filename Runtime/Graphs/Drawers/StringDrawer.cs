@@ -9,12 +9,27 @@ namespace IRG.Graphs.Drawers
     {
         public override VisualElement Build()
         {
-            var field = new TextField($"{Name}")
+            var field = new TextField()
             {
                 isDelayed = true,
             };
+            if (!HasAttribute<NoLabelAttribute>()) field.label = Name;
             if (IsReadOnly) field.isReadOnly = true;
-            if (FieldType.IsDefined(typeof(TextAreaAttribute))) field.multiline = true;
+            if (HasAttribute<TextAreaAttribute>())
+            {
+                field.multiline = true;
+
+                var label = field.Q<Label>();
+                if (label != null) label.style.minWidth = 70f;
+                
+                var textElement = field.Query<TextElement>().Last();
+                textElement.style.unityTextAlign = TextAnchor.MiddleRight;
+                textElement.RegisterCallback<GeometryChangedEvent>(evt =>
+                {
+                    field.style.height = textElement.resolvedStyle.height;
+                });
+                textElement.style.paddingBottom = 5f;
+            }
             
             field.SetValueWithoutNotify(GetValue<string>());
             field.RegisterValueChangedCallback(evt =>

@@ -35,7 +35,7 @@ namespace IRG.Graphs.Drawers
                         _localList.Add(value);
                     }
                 }
-                SetValue(_localList);
+                SetValueWithoutNotify(_localList);
             }
             
             var field = new ListView()
@@ -53,17 +53,8 @@ namespace IRG.Graphs.Drawers
             field.makeItem = () => new VisualElement();
             field.bindItem = (element, i) =>
             {
-                var drawer = GetIndexedDrawer(_localList, i);
+                var drawer = CreateIndexedDrawer(_localList, i);
                 element.Add(drawer.Build());
-                drawer.OnValueChanged += () =>
-                {
-                    if (FieldType.IsArray)
-                    {
-                        Array array = Array.CreateInstance(ElementType, _localList.Count);
-                        _localList.CopyTo(array, 0);
-                        SetValue(array);
-                    }
-                };
             };
             field.unbindItem = (element, i) =>
             {
@@ -71,6 +62,14 @@ namespace IRG.Graphs.Drawers
             };
             
             field.Rebuild();
+            
+            OnValueChanged += () =>
+            {
+                if (!FieldType.IsArray) return;
+                Array array = Array.CreateInstance(ElementType, _localList.Count);
+                _localList.CopyTo(array, 0);
+                SetValue(array);
+            };
 
             return field;
         }

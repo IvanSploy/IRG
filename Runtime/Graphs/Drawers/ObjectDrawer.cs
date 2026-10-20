@@ -20,12 +20,12 @@ namespace IRG.Graphs.Drawers
             if (_objData == null)
             {
                 _objData = Activator.CreateInstance(FieldType);
-                SetValue(_objData);
+                SetValueWithoutNotify(_objData);
             }
             
             var foldout = new Foldout { text = Name };
 
-            var drawers = NodeFieldDrawerFactory.GetDrawers(_objData);
+            var drawers = NodeFieldDrawerFactory.CreateDrawers(_objData);
             foreach (var drawer in drawers)
             {
                 foldout.Add(drawer.Build());
@@ -33,6 +33,7 @@ namespace IRG.Graphs.Drawers
                 {
                     drawer.OnValueChanged += () => SetValue(_objData);;
                 }
+                AddDrawerForEvents(drawer);
             }
             
             return foldout;

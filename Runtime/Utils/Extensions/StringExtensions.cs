@@ -41,8 +41,11 @@ namespace IRG
         
         public static string ToSnakeCase(this string input)
         {
-            return Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1_$2")
-                .ToLower();
+            input = Regex.Replace(input, @"([A-Z]+)([A-Z][a-z])", "$1_$2");
+            input = Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1_$2");
+            input = Regex.Replace(input, @"[^a-zA-Z0-9]+", "_");
+
+            return input.Trim('_').ToLowerInvariant();
         }
         
         public static string WithSpaces(this string str)

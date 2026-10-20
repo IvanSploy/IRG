@@ -45,21 +45,21 @@ namespace IRG.Graphs
             }
         }
         
-        public static List<NodeFieldDrawer> GetDrawers(object data)
+        public static List<NodeFieldDrawer> CreateDrawers(object data)
         {
             Initialize();
             List<NodeFieldDrawer> drawers = new List<NodeFieldDrawer>();
             FieldInfo[] fields = data.GetType().GetFields();
             foreach (var field in fields)
             {
-                var drawer = GetDrawer(field, data);
+                var drawer = CreateDrawer(field, data);
                 if(drawer != null) drawers.Add(drawer);
             }
 
             return drawers;
         }
 
-        public static NodeFieldDrawer GetDrawer(FieldInfo field, object data)
+        public static NodeFieldDrawer CreateDrawer(FieldInfo field, object data)
         {
             if (field.IsDefined(typeof(HideInNodeAttribute))) return null;
             if (!field.IsPublic && !field.IsDefined(typeof(SerializeField))) return null;
@@ -91,7 +91,7 @@ namespace IRG.Graphs
             return null;
         }
         
-        public static NodeFieldDrawer GetIndexedDrawer(FieldInfo field, object data, IList list, int index)
+        public static NodeFieldDrawer CreateIndexedDrawer(FieldInfo field, object data, IList list, int index)
         {
             Type elementType = list.GetType().IsArray
                 ? list.GetType().GetElementType() 

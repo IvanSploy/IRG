@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace IRG.Graphs
 {
@@ -15,5 +16,8 @@ namespace IRG.Graphs
             var json = JsonUtility.ToJson(this);
             return (NodeData)JsonUtility.FromJson(json, GetType());
         }
+
+        public virtual VisualElement OnDraw() => null;
+        public virtual void OnRefresh(VisualElement ve) {}
     }
 }

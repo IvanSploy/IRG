@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -8,8 +9,10 @@ namespace IRG.Graphs.Editor
     public struct GraphNodeContext
     {
         public string Title;
-        public bool HasInput;
-        public bool HasOutput;
+        public PortType InputType;
+        public List<string> InputIds;
+        public PortType OutputType;
+        public List<string> OutputIds;
         public Color TitleColor;
         public Color HeaderColor;
         public StyleLength MinWidth;
@@ -20,8 +23,10 @@ namespace IRG.Graphs.Editor
             GraphNodeContext context = new GraphNodeContext
             {
                 Title = "Title",
-                HasInput = true,
-                HasOutput = true,
+                InputType = PortType.Fixed,
+                InputIds = new List<string>() { "In" },
+                OutputType = PortType.Fixed,
+                OutputIds = new List<string>() { "Next" },
                 TitleColor = Color.white,
                 HeaderColor = Color.black,
                 MinWidth = 150f,
@@ -33,22 +38,21 @@ namespace IRG.Graphs.Editor
         public static GraphNodeContext Get(Type type)
         {
             GraphNodeContext context = Default();
+            context.Title = type.Name.RemoveFromEnd("data").WithSpaces();
+            
             if (type.IsDefined(typeof(GraphNodeAttribute), false))
             {
                 var attr = type.GetCustomAttribute<GraphNodeAttribute>();
-                context.Title = attr.Title;
+                if(!string.IsNullOrEmpty(attr.Title)) context.Title = attr.Title;
                 context.HeaderColor = GetColor(attr.Color);
-                
-            }
-            else
-            {
-                context.Title = type.Name.RemoveFromEnd("data").WithSpaces();
+                context.OutputType = attr.OutputPortType;
             }
             return context;
         }
 
         private static Color GetColor(string colorName, Color defaultColor = default)
         {
+            if (string.IsNullOrEmpty(colorName)) return defaultColor;
             PropertyInfo property = typeof(Color).GetProperty(colorName, BindingFlags.Public | BindingFlags.Static);
 
             if (property != null && property.PropertyType == typeof(Color))

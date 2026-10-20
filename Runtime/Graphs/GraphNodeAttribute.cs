@@ -6,7 +6,7 @@ namespace IRG.Graphs
     public class GraphNodeAttribute : Attribute
     {
         public string Title;
-        public GraphNodeType Type = GraphNodeType.Flow;
+        public PortType OutputPortType;
         public string Color = string.Empty;
         public string Filter = string.Empty;
         public string Group = string.Empty;

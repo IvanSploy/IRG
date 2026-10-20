@@ -523,7 +523,7 @@ namespace IRG.Graphs.Editor
                 }
             }
             
-            foreach (NodeData nodeData in graphData.Nodes)
+            foreach (NodeData nodeData in graphData.Nodes.ToList())
             {
                 if(nodeData == null) continue;
                 
@@ -659,7 +659,7 @@ namespace IRG.Graphs.Editor
             GraphNodeContext ctx = GraphNodeContext.Default();
             ctx.Title = "Start";
             ctx.HeaderColor = Color.softRed;
-            ctx.HasInput = false;
+            ctx.InputType = PortType.None;
             ctx.MinWidth = 100f;
             ctx.MaxWidth = 100f;
             initialNode.Init(ctx, Vector2.zero, "initial_node");
