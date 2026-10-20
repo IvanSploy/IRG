@@ -4,9 +4,10 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace IRG.Graphs.Editor
+namespace IRG.Graphs
 {
-    public struct GraphNodeContext
+    [Serializable]
+    public struct NodeContext
     {
         public string Title;
         public PortType InputType;
@@ -18,11 +19,11 @@ namespace IRG.Graphs.Editor
         public StyleLength MinWidth;
         public StyleLength MaxWidth;
 
-        public static GraphNodeContext Default()
+        public static NodeContext Default()
         {
-            GraphNodeContext context = new GraphNodeContext
+            NodeContext context = new NodeContext
             {
-                Title = "Title",
+                Title = "",
                 InputType = PortType.Fixed,
                 InputIds = new List<string>() { "In" },
                 OutputType = PortType.Fixed,
@@ -35,14 +36,27 @@ namespace IRG.Graphs.Editor
             return context;
         }
 
-        public static GraphNodeContext Get(Type type)
+        public static NodeContext Get(Type type)
         {
-            GraphNodeContext context = Default();
-            context.Title = type.Name.RemoveFromEnd("data").WithSpaces();
+            string title = type.Name.RemoveFromEnd("data").WithSpaces();
             
-            if (type.IsDefined(typeof(GraphNodeAttribute), false))
+            if (type.IsDefined(typeof(NodeConfigAttribute)))
             {
-                var attr = type.GetCustomAttribute<GraphNodeAttribute>();
+                var attr = type.GetCustomAttribute<NodeConfigAttribute>();
+                var config = Resources.Load<NodeConfig>(attr.Path);
+                if (config)
+                {
+                    if(string.IsNullOrEmpty(config.Context.Title)) config.Context.Title = title;
+                    return config.Context;
+                }
+            }
+            
+            NodeContext context = Default();
+            context.Title = title;
+            
+            if (type.IsDefined(typeof(NodeAttribute), false))
+            {
+                var attr = type.GetCustomAttribute<NodeAttribute>();
                 if(!string.IsNullOrEmpty(attr.Title)) context.Title = attr.Title;
                 context.HeaderColor = GetColor(attr.Color);
                 context.OutputType = attr.OutputPortType;

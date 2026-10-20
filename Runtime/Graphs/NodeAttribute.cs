@@ -3,7 +3,7 @@ using System;
 namespace IRG.Graphs
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class GraphNodeAttribute : Attribute
+    public class NodeAttribute : Attribute
     {
         public string Title;
         public PortType OutputPortType;
@@ -11,8 +11,8 @@ namespace IRG.Graphs
         public string Filter = string.Empty;
         public string Group = string.Empty;
         
-        public GraphNodeAttribute() { }
-        public GraphNodeAttribute(string title)
+        public NodeAttribute() { }
+        public NodeAttribute(string title)
         {
             Title = title;
         }

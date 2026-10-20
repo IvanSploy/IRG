@@ -11,7 +11,7 @@ namespace IRG.Graphs.Editor
     {
         private readonly Graph _graph;
         private NodeData _data;
-        private GraphNodeContext _context;
+        private NodeContext _context;
         private int _inputCount;
         private int _outputCount;
 
@@ -36,7 +36,7 @@ namespace IRG.Graphs.Editor
             _graph = graph;
         }
         
-        public void Init(GraphNodeContext context, Vector2 pos, string id = null)
+        public void Init(NodeContext context, Vector2 pos, string id = null)
         {
             _context = context;
             ID = string.IsNullOrEmpty(id) ? Guid.NewGuid().ToString() : id;
@@ -46,7 +46,7 @@ namespace IRG.Graphs.Editor
         
         public void Init(Type type, Vector2 pos, string id = null)
         {
-            Init(GraphNodeContext.Get(type), pos, id);
+            Init(NodeContext.Get(type), pos, id);
             _data = (NodeData)Activator.CreateInstance(type);
             Serialize(_data);
             OnLoad();
@@ -54,7 +54,7 @@ namespace IRG.Graphs.Editor
         
         public void Init(NodeData data)
         {
-            Init(GraphNodeContext.Get(data.GetType()), data.Position, data.ID);
+            Init(NodeContext.Get(data.GetType()), data.Position, data.ID);
             _data = data.Clone();
             OnLoad();
         }
@@ -114,7 +114,7 @@ namespace IRG.Graphs.Editor
                 /* Main Container */
                 Button addChoiceButton = new Button
                 {
-                    text = "Add Choice",
+                    text = "Add Output",
                 };
                 addChoiceButton.clicked += () =>
                 {
@@ -129,7 +129,7 @@ namespace IRG.Graphs.Editor
                         _outputExtensions[^1].Extension.Add(ve);
                     }
                 };
-                mainContainer.Insert(1, addChoiceButton);
+                outputContainer.Add(addChoiceButton);
             }
 
             OnDrawData();

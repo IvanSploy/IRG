@@ -20,7 +20,7 @@ namespace IRG.Graphs
         public Rect Wakala;
     }
     
-    [GraphNode("Test List", Color = "gray2", Filter = "Test"), Serializable]
+    [Node("Test List", Color = "gray2", Filter = "Test"), Serializable]
     public class TestListData : NodeData
     {
         public TestClassObject ClassObject;

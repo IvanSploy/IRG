@@ -1,11 +1,3 @@
-GridBackground {
-    --grid-background-color: rgb(43, 43, 43);
-    --line-color: rgba(51, 51, 51, 0.4);
-    --thick-line-color: rgb(51, 51, 51);
-    --spacing: 25;
-    background-color: rgba(255, 78, 78, 0);
-}
-
 .unity-base-text-field__input {
     padding-top: 0;
     padding-right: 0;

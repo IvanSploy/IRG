@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace IRG.Graphs
 {
-    [GraphNode("Test", Color = "gray", Filter = "Test"), Serializable]
+    [Node("Test", Color = "gray", Filter = "Test"), Serializable]
     public class TestData : NodeData
     {
         public int IntField;

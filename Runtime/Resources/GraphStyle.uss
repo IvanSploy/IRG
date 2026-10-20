@@ -5,3 +5,11 @@ GridBackground {
     --spacing: 25;
     background-color: rgba(255, 78, 78, 0);
 }
+
+.unity-base-text-field {
+    flex-direction: column;
+}
+
+.unity-base-text-field__label {
+    margin-bottom: 1;
+}

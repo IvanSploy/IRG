@@ -345,7 +345,7 @@ namespace IRG.Graphs.Editor
 
         private void AddStyle()
         {
-            var styleSheet = Resources.Load<StyleSheet>("GridBackground");
+            var styleSheet = Resources.Load<StyleSheet>("GraphStyle");
             styleSheets.Add(styleSheet);
             style.flexGrow = 1f;
         }
@@ -656,7 +656,7 @@ namespace IRG.Graphs.Editor
         public GraphNode CreateInitialNode()
         {
             var initialNode = new GraphNode(this);
-            GraphNodeContext ctx = GraphNodeContext.Default();
+            NodeContext ctx = NodeContext.Default();
             ctx.Title = "Start";
             ctx.HeaderColor = Color.softRed;
             ctx.InputType = PortType.None;

@@ -36,7 +36,9 @@ namespace IRG.Graphs.Editor
             {
                 if(type == typeof(InitialNodeData)) continue;
 
-                var graphNodeAttr = type.GetCustomAttribute<GraphNodeAttribute>();
+                string filter = "";
+                string group = "";
+                var graphNodeAttr = type.GetCustomAttribute<NodeAttribute>();
                 if (graphNodeAttr == null)
                 {
                     groups.AddToList("", type);

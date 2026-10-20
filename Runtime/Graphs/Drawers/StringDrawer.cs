@@ -23,10 +23,13 @@ namespace IRG.Graphs.Drawers
                 if (label != null) label.style.minWidth = 70f;
                 
                 var textElement = field.Query<TextElement>().Last();
-                textElement.style.unityTextAlign = TextAnchor.MiddleRight;
+                textElement.style.flexGrow = 0f;
+                textElement.style.flexShrink = 0f;
+                textElement.style.unityTextAlign = TextAnchor.MiddleLeft;
                 textElement.RegisterCallback<GeometryChangedEvent>(evt =>
                 {
-                    field.style.height = textElement.resolvedStyle.height;
+                    if (label != null) field.style.height = textElement.resolvedStyle.height + label.resolvedStyle.height;
+                    else field.style.height = textElement.resolvedStyle.height;
                 });
                 textElement.style.paddingBottom = 5f;
             }

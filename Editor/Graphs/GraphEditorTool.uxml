@@ -1,4 +1,5 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.irg.utils/Runtime/Resources/ToolStyle.uss?fileID=7433441132597879392&amp;guid=797c302f8298e8746a481558d0a77977&amp;type=3#ToolStyle"/>
     <ui:VisualElement style="flex-grow: 1; top: 0; left: 0; bottom: 0; right: 0; position: absolute; background-color: rgb(50, 50, 50);">
         <IRG.Graphs.Editor.Graph show-undo-redo-history="true"/>
     </ui:VisualElement>
