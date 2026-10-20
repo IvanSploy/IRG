@@ -8,7 +8,7 @@ namespace IRG.Graphs
         public string FromNodeID;
         public string FromPortID;
 
-        public string ToNodeID;
-        //public string ToPortID; // (optional)
+        public string ToNodeID; 
+        public string ToPortID;
     }
 }

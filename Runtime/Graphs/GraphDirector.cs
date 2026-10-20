@@ -108,7 +108,7 @@ namespace IRG.Graphs
             {
                 var fromNode = edgeData.FromNodeID == "initial_node" ? _initialNode : _nodes[edgeData.FromNodeID];
                 var toNode = _nodes[edgeData.ToNodeID];
-                fromNode.ConnectTo(toNode, edgeData.FromPortID);
+                fromNode.ConnectTo(edgeData.FromPortID, toNode);
             }
         }
     }

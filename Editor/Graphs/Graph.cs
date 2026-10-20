@@ -311,7 +311,8 @@ namespace IRG.Graphs.Editor
             }
             else
             {
-                _pendingEdge.input = nodePort = graphNode.InputPort;
+                if (graphNode.InputPorts.Count == 0) return true;
+                _pendingEdge.input = nodePort = graphNode.InputPorts[0];
                 _pendingEdge.output = _pendingPort;
             }
             
@@ -486,12 +487,14 @@ namespace IRG.Graphs.Editor
                         var fromNode = (GraphNode)edge.output.node;
                         var fromPortID = edge.output.GetID();
                         var toNode = (GraphNode)edge.input.node;
+                        var toPortID = edge.input.GetID();
             
                         graphData.Edges.Add(new EdgeData
                         {
                             FromNodeID = fromNode.ID,
                             FromPortID = fromPortID,
-                            ToNodeID = toNode.ID
+                            ToNodeID = toNode.ID,
+                            ToPortID = toPortID,
                         });
                     } break;
                 }
@@ -549,7 +552,7 @@ namespace IRG.Graphs.Editor
                 if(fromPort == null) continue;
                 
                 if(!graphNodes.TryGetValue(edgeData.ToNodeID, out var toNode)) continue;
-                var toPort = toNode.InputPort;
+                var toPort = toNode.GetInputPort(edgeData.ToPortID);
                 
                 if(toPort == null) continue;
                 

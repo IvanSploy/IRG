@@ -5,11 +5,11 @@ namespace IRG.Graphs
     [AttributeUsage(AttributeTargets.Class)]
     public class NodeConfigAttribute : Attribute
     {
-        public string Path;
+        public string ResourcesPath;
         
-        public NodeConfigAttribute(string path)
+        public NodeConfigAttribute(string resourcesPath)
         {
-            Path = path;
+            ResourcesPath = resourcesPath;
         }
     }
 }

@@ -14,28 +14,28 @@ namespace IRG.Graphs
 
     public abstract class NodeAction
     {
-        private readonly Dictionary<string, List<NodeAction>> _nextActions = new();
+        private readonly Dictionary<string, List<NodeAction>> _nextNodes = new();
         private int _readyNodes;
         private int _requiredNodes;
         public bool IsActive { get; private set; }
         public bool IsReady => _readyNodes == _requiredNodes;
         public bool IsDone { get; private set; }
-        private string _outNode;
+        private string _outPortId;
         
         public void Reset()
         {
             IsActive = false;
             IsDone = false;
-            _outNode = "next";
+            _outPortId = "next";
             _readyNodes = 0;
             _requiredNodes = 0;
-            _nextActions.Clear();
+            _nextNodes.Clear();
         }
         
-        public void ConnectTo(NodeAction next, string portId)
+        public void ConnectTo(string fromPortId, NodeAction to)
         {
-            next._requiredNodes++;
-            _nextActions.AddToList(portId, next);
+            to._requiredNodes++;
+            _nextNodes.AddToList(fromPortId, to);
         }
         
         public void AddReadyNode()
@@ -52,27 +52,27 @@ namespace IRG.Graphs
         
         public List<NodeAction> GetNextNodes()
         {
-            _nextActions.TryGetValue(_outNode, out var next);
-            foreach (var pair in _nextActions)
+            _nextNodes.TryGetValue(_outPortId, out var nextActions);
+            foreach (var pair in _nextNodes)
             {
-                if(pair.Key == _outNode) continue;
-                foreach (var nodeAction in pair.Value)
+                if(pair.Key == _outPortId) continue;
+                foreach (var nextAction in pair.Value)
                 {
-                    nodeAction.RemoveRequiredNode();
+                    nextAction.RemoveRequiredNode();
                 }
             }
-            return next;
+            return nextActions;
         }
         
         private void RemoveRequiredNode()
         {
             _requiredNodes--;
             if (_requiredNodes != 0) return;
-            foreach (var next in _nextActions)
+            foreach (var next in _nextNodes)
             {
-                foreach (var nodeAction in next.Value)
+                foreach (var nextAction in next.Value)
                 {
-                    nodeAction.RemoveRequiredNode();
+                    nextAction.RemoveRequiredNode();
                 }
             }
         }
@@ -80,7 +80,7 @@ namespace IRG.Graphs
         protected void SetDone(string outNode = null)
         {
             IsDone = true;
-            if(!string.IsNullOrEmpty(outNode)) _outNode = outNode;
+            if(!string.IsNullOrEmpty(outNode)) _outPortId = outNode;
         }
     }
 }

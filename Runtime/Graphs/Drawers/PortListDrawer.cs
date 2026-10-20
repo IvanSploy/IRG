@@ -8,9 +8,30 @@ namespace IRG.Graphs.Drawers
     [NodeFieldDrawer(typeof(IList), 90, true)]
     public class PortListDrawer : NodeFieldDrawer
     {
+        public enum Direction
+        {
+            None,
+            Input,
+            Output,
+        }
+
+        public Direction PortType;
+        
         public override bool IsValid()
         {
-            return HasAttribute<PortFieldAttribute>();
+            if (!HasAttribute<PortFieldAttribute>()) return false;
+            
+            if (HasAttribute<InputFieldAttribute>())
+            {
+                PortType = Direction.Input;
+            }
+
+            if (HasAttribute<OutputFieldAttribute>())
+            {
+                PortType = Direction.Output;
+            }
+
+            return true;
         }
 
         private IList _localList;
@@ -41,7 +62,10 @@ namespace IRG.Graphs.Drawers
 
         public VisualElement OnAdd()
         {
-            _localList.Add(null);
+            object element = ElementType.IsValueType
+                ? Activator.CreateInstance(ElementType)
+                : null;
+            _localList.Add(element);
             RefreshArray();
             return CreateIndexedDrawer(_localList, _localList.Count - 1).Build();
         }

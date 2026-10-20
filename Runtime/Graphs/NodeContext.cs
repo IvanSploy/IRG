@@ -43,7 +43,7 @@ namespace IRG.Graphs
             if (type.IsDefined(typeof(NodeConfigAttribute)))
             {
                 var attr = type.GetCustomAttribute<NodeConfigAttribute>();
-                var config = Resources.Load<NodeConfig>(attr.Path);
+                var config = Resources.Load<NodeConfig>(attr.ResourcesPath);
                 if (config)
                 {
                     if(string.IsNullOrEmpty(config.Context.Title)) config.Context.Title = title;

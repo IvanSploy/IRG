@@ -36,6 +36,7 @@ namespace IRG
         public static string RemoveFromEnd(this string input, string remove)
         {
             int index = input.LastIndexOf(remove, StringComparison.OrdinalIgnoreCase);
+            if(index < 0) return input;
             return input[..index];
         }
         

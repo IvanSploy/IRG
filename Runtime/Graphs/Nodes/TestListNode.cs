@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace IRG.Graphs
 {
-    [Serializable]
     public class TestClassObject
     {
         public long LongValue;
@@ -20,15 +19,16 @@ namespace IRG.Graphs
         public Rect Wakala;
     }
     
-    [Node("Test List", Color = "gray2", Filter = "Test"), Serializable]
+    [NodeConfig("NodeConfigs/TestIn")]
+    [Serializable]
     public class TestListData : NodeData
     {
         public TestClassObject ClassObject;
         public TestObject TestObject;
         public string[] ArrayString;
-        public List<string> ListStringField;
-        public List<int> ListIntField;
-        public List<TestObject> ListStructField;
+        [OutputField] public List<string> ListStringField;
+        [OutputField] public List<int> ListIntField;
+        [InputField] public List<TestObject> ListStructField;
         public List<TestClassObject> ListObjectField;
     }
     

@@ -24,7 +24,7 @@ namespace IRG.Graphs.Editor
         public string ID { get; private set; }
         public bool IsInitialNode => ID == "initial_node";
         public GraphGroup Group { get; set; }
-        public Port InputPort { get; private set; }
+        public List<Port> InputPorts { get; } = new();
         private readonly List<PortElement> _inputExtensions = new();
         public List<Port> OutputPorts { get; } = new();
         private readonly List<PortElement> _outputExtensions = new();
@@ -61,8 +61,11 @@ namespace IRG.Graphs.Editor
         
         public event Action OnInit;
         
-        public event Func<VisualElement> OnAdd;
-        public event Action<int> OnRemove;
+        public event Func<VisualElement> OnInputAdd;
+        public event Action<int> OnInputRemove;
+        
+        public event Func<VisualElement> OnOutputAdd;
+        public event Action<int> OnOutputRemove;
 
         public void Draw()
         {
@@ -87,18 +90,35 @@ namespace IRG.Graphs.Editor
             titleContainer.Insert(0, _title);
             titleContainer.style.backgroundColor = _context.HeaderColor;
 
-            /* Top Container */
+            /* Input Container */
             if (_context.InputType == PortType.Fixed)
             {
-                _inputCount = _context.InputIds.Count;
                 foreach (var portName in _context.InputIds)
                 {
-                    string id = portName.ToSnakeCase();
-                    InputPort = CreatePort(portName, id, direction: Direction.Input);
-                    InputPort.SetID(id);
-                    inputContainer.Add(InputPort);
-                    inputContainer.style.flexGrow = 0f;
+                    AddInputPort(portName);
                 }
+            }
+            else if (_context.InputType == PortType.Custom)
+            {
+                /* Main Container */
+                Button addButton = new Button
+                {
+                    text = "Add Input",
+                };
+                addButton.clicked += () =>
+                {
+                    _graph.RecordState("Graph Added Input");
+                    AddInputPort();
+                    
+                    if (OnInputAdd == null) return;
+                    foreach (var del in OnInputAdd.GetInvocationList())
+                    {
+                        var callback = (Func<VisualElement>)del;
+                        VisualElement ve = callback.Invoke();
+                        _inputExtensions[^1].Extension.Add(ve);
+                    }
+                };
+                inputContainer.Add(addButton);
             }
             
             /* Output Container */
@@ -106,7 +126,7 @@ namespace IRG.Graphs.Editor
             {
                 foreach (var portName in _context.OutputIds)
                 {
-                    AddOutPort(portName);
+                    AddOutputPort(portName);
                 }
             }
             else if (_context.OutputType == PortType.Custom)
@@ -118,11 +138,11 @@ namespace IRG.Graphs.Editor
                 };
                 addChoiceButton.clicked += () =>
                 {
-                    _graph.RecordState("Graph Added Choice");
-                    AddOutPort();
+                    _graph.RecordState("Graph Added Output");
+                    AddOutputPort();
                     
-                    if (OnAdd == null) return;
-                    foreach (var del in OnAdd.GetInvocationList())
+                    if (OnOutputAdd == null) return;
+                    foreach (var del in OnOutputAdd.GetInvocationList())
                     {
                         var callback = (Func<VisualElement>)del;
                         VisualElement ve = callback.Invoke();
@@ -157,18 +177,40 @@ namespace IRG.Graphs.Editor
                     int i = 0;
                     while (ve.childCount > 0)
                     {
-                        if(i >= _outputExtensions.Count)
+                        if (portDrawer.PortType == PortListDrawer.Direction.Input)
                         {
-                            if (_context.OutputType != PortType.Custom) break;
-                            AddOutPort();
+                            if(i >= _inputExtensions.Count)
+                            {
+                                if (_context.InputType != PortType.Custom) break;
+                                AddInputPort();
+                            }
+                            var element = ve.ElementAt(0);
+                            _inputExtensions[i].Extension.Clear();
+                            _inputExtensions[i].Extension.Add(element);
                         }
-                        var element = ve.ElementAt(0);
-                        _outputExtensions[i].Extension.Clear();
-                        _outputExtensions[i].Extension.Add(element);
+                        else
+                        {
+                            if(i >= _outputExtensions.Count)
+                            {
+                                if (_context.OutputType != PortType.Custom) break;
+                                AddOutputPort();
+                            }
+                            var element = ve.ElementAt(0);
+                            _outputExtensions[i].Extension.Clear();
+                            _outputExtensions[i].Extension.Add(element);
+                        }
                         i++;
                     }
-                    OnAdd += () => portDrawer.OnAdd();
-                    OnRemove += portDrawer.OnRemove;
+                    if(portDrawer.PortType == PortListDrawer.Direction.Input)
+                    {
+                        OnInputAdd += () => portDrawer.OnAdd();
+                        OnInputRemove += portDrawer.OnRemove;
+                    }
+                    else
+                    {
+                        OnOutputAdd += () => portDrawer.OnAdd();
+                        OnOutputRemove += portDrawer.OnRemove;
+                    }
                 }
                 else
                 {
@@ -192,7 +234,34 @@ namespace IRG.Graphs.Editor
             
             evt.menu.AppendSeparator();
         }
+        
+        private void Serialize(NodeData data)
+        {
+            data.ID = ID;
+            data.Position = GetPosition().position;
+            data.GroupID = Group?.ID;
+        }
 
+        public NodeData Serialize()
+        {
+            OnSave();
+            Serialize(_data);
+            return _data.Clone();
+        }
+        
+        private void OnLoad() { }
+        private void OnSave() { }
+        
+        public Port GetInputPort(string portID)
+        {
+            foreach (var port in InputPorts)
+            {
+                if (port.GetID() == portID) return port;
+            }
+            
+            return null;
+        }
+        
         public Port GetOutputPort(string portID)
         {
             foreach (var port in OutputPorts)
@@ -209,7 +278,179 @@ namespace IRG.Graphs.Editor
             
             return null;
         }
+        
+        private void AddInputPort(string portName = null)
+        {
+            var portElement = new PortElement();
+            
+            portName = string.IsNullOrEmpty(portName) ? $"In {_inputCount + 1}" : portName;
+            string portId = portName.ToSnakeCase();
 
+            _inputCount++;
+            
+            /* Top Container */
+            Port port = CreateInputPort(portName, portId);
+            
+            port.style.width = new StyleLength(StyleKeyword.Auto);
+            port.style.height = new StyleLength(StyleKeyword.Auto);
+            port.SetID(portId);
+
+            port.style.alignItems = Align.Center;
+
+            var extension = new VisualElement();
+            portElement.Extension = extension;
+            
+            extension.style.flexGrow = 1f;
+            extension.style.flexShrink = 1f;
+            port.Add(extension);
+
+            if (_context.InputType == PortType.Custom)
+            {
+                Button removeChoiceButton = new Button()
+                {
+                    text = "X",
+                };
+                portElement.Remove = removeChoiceButton;
+            
+                removeChoiceButton.style.flexGrow = 0f;
+                removeChoiceButton.style.flexShrink = 0f;
+                removeChoiceButton.clicked += () =>
+                {
+                    _graph.RecordState("Graph Removed Input");
+                    OnInputRemove?.Invoke(InputPorts.IndexOf(port));
+                    RemoveInputPort(port);
+                };
+                port.Add(removeChoiceButton);
+            }
+            
+            _inputExtensions.Add(portElement);
+
+            inputContainer.Add(port);
+            inputContainer.style.flexShrink = 1f;
+            
+            InputPorts.Add(port);
+            RefreshInputPortIds();
+            RefreshExpandedState();
+        }
+        
+        private void AddOutputPort(string portName = null)
+        {
+            var portElement = new PortElement();
+            
+            portName = string.IsNullOrEmpty(portName) ? $"Out {_outputCount + 1}" : portName;
+            string portId = portName.ToSnakeCase();
+
+            _outputCount++;
+            
+            /* Top Container */
+            Port port = CreateOutputPort(portName, portId);
+            
+            port.style.width = new StyleLength(StyleKeyword.Auto);
+            port.style.height = new StyleLength(StyleKeyword.Auto);
+            port.SetID(portId);
+
+            port.style.alignItems = Align.Center;
+
+            var extension = new VisualElement();
+            portElement.Extension = extension;
+            
+            extension.style.flexGrow = 1f;
+            extension.style.flexShrink = 1f;
+            port.Add(extension);
+
+            if (_context.OutputType == PortType.Custom)
+            {
+                Button removeChoiceButton = new Button()
+                {
+                    text = "X",
+                };
+                portElement.Remove = removeChoiceButton;
+            
+                removeChoiceButton.style.flexGrow = 0f;
+                removeChoiceButton.style.flexShrink = 0f;
+                removeChoiceButton.clicked += () =>
+                {
+                    _graph.RecordState("Graph Removed Output");
+                    OnOutputRemove?.Invoke(OutputPorts.IndexOf(port));
+                    RemoveOutPort(port);
+                };
+                port.Add(removeChoiceButton);
+            }
+            
+            _outputExtensions.Add(portElement);
+
+            outputContainer.Add(port);
+            outputContainer.style.flexShrink = 1f;
+            
+            OutputPorts.Add(port);
+            RefreshOutputPortIds();
+            RefreshExpandedState();
+        }
+        
+        private void RemoveInputPort(Port port)
+        {
+            _inputCount--;
+            var portIndex = InputPorts.IndexOf(port);
+            _inputExtensions.RemoveAt(portIndex);
+            _graph.DeleteElements(port.connections);
+            inputContainer.Remove(port);
+            InputPorts.Remove(port);
+            RefreshInputPortIds();
+        }
+        
+        private void RemoveOutPort(Port port)
+        {
+            _outputCount--;
+            var portIndex = OutputPorts.IndexOf(port);
+            _outputExtensions.RemoveAt(portIndex);
+            _graph.DeleteElements(port.connections);
+            outputContainer.Remove(port);
+            OutputPorts.Remove(port);
+            RefreshOutputPortIds();
+        }
+
+        public void RefreshInputPortIds()
+        {
+            if (_context.InputType != PortType.Custom) return;
+            for (var i = 0; i < InputPorts.Count; i++)
+            {
+                var port = InputPorts[i];
+                port.portName = "In " + (i + 1);
+                port.SetID($"in_{i+1}");
+            }
+        }
+        
+        public void RefreshOutputPortIds()
+        {
+            if (_context.OutputType != PortType.Custom) return;
+            for (var i = 0; i < OutputPorts.Count; i++)
+            {
+                var port = OutputPorts[i];
+                port.portName = "Out " + (i + 1);
+                port.SetID($"out_{i+1}");
+            }
+        }
+        
+        private Port CreateInputPort(string text, string id, Orientation orientation = Orientation.Horizontal, Port.Capacity capacity = Port.Capacity.Multi)
+        {
+            Port port = InstantiatePort(orientation, Direction.Input, capacity, typeof(bool));
+            port.portName = text;
+            port.Q<Label>().tooltip = $"Code id: {id}";
+            port.tooltip = $"Code id: {id}";
+            port.AddManipulator(new EdgeConnector<Edge>(new EdgeConnectorManipulator(_graph)));
+            return port;
+        }
+        
+        private Port CreateOutputPort(string text, string id, Orientation orientation = Orientation.Horizontal, Port.Capacity capacity = Port.Capacity.Multi)
+        {
+            Port port = InstantiatePort(orientation, Direction.Output, capacity, typeof(bool));
+            port.portName = text;
+            port.Q<Label>().tooltip = $"Code id: {id}";
+            port.tooltip = $"Code id: {id}";
+            port.AddManipulator(new EdgeConnector<Edge>(new EdgeConnectorManipulator(_graph)));
+            return port;
+        }
+        
         public void DisconnectAllPorts()
         {
             DisconnectInputPorts();
@@ -238,110 +479,6 @@ namespace IRG.Graphs.Editor
                 }
             }
             _graph.DeleteElements(edges);
-        }
-        
-        private Port CreatePort(string text, string id, Orientation orientation = Orientation.Horizontal,
-            Direction direction = Direction.Output, Port.Capacity capacity = Port.Capacity.Multi)
-        {
-            Port port = InstantiatePort(orientation, direction, capacity, typeof(bool));
-            port.portName = text;
-            port.Q<Label>().tooltip = $"Code id: {id}";
-            port.tooltip = $"Code id: {id}";
-            port.AddManipulator(new EdgeConnector<Edge>(new EdgeConnectorManipulator(_graph)));
-            return port;
-        }
-        
-        private void Serialize(NodeData data)
-        {
-            data.ID = ID;
-            data.Position = GetPosition().position;
-            data.GroupID = Group?.ID;
-        }
-
-        public NodeData Serialize()
-        {
-            OnSave();
-            Serialize(_data);
-            return _data.Clone();
-        }
-        
-        private void OnLoad() { }
-        private void OnSave() { }
-        
-        private void AddOutPort(string portName = null)
-        {
-            var portElement = new PortElement();
-            
-            portName = string.IsNullOrEmpty(portName) ? $"Out {_outputCount + 1}" : portName;
-            string portId = portName.ToSnakeCase();
-
-            _outputCount++;
-            
-            /* Top Container */
-            Port port = CreatePort(portName, portId);
-            
-            port.style.width = new StyleLength(StyleKeyword.Auto);
-            port.style.height = new StyleLength(StyleKeyword.Auto);
-            port.SetID(portId);
-
-            port.style.alignItems = Align.FlexStart;
-
-            var extension = new VisualElement();
-            portElement.Extension = extension;
-            
-            extension.style.flexGrow = 1f;
-            extension.style.flexShrink = 1f;
-            port.Add(extension);
-
-            if (_context.OutputType == PortType.Custom)
-            {
-                Button removeChoiceButton = new Button()
-                {
-                    text = "X",
-                };
-                portElement.Remove = removeChoiceButton;
-            
-                removeChoiceButton.style.flexGrow = 0f;
-                removeChoiceButton.style.flexShrink = 0f;
-                removeChoiceButton.clicked += () =>
-                {
-                    _graph.RecordState("Graph Removed Choice");
-                    OnRemove?.Invoke(OutputPorts.IndexOf(port));
-                    RemoveOutPort(port);
-                };
-                port.Add(removeChoiceButton);
-            }
-            
-            _outputExtensions.Add(portElement);
-
-            outputContainer.Add(port);
-            outputContainer.style.flexShrink = 1f;
-            
-            OutputPorts.Add(port);
-            RefreshExpandedState();
-            RefreshPortIds();
-        }
-        
-        private void RemoveOutPort(Port port)
-        {
-            _outputCount--;
-            var portIndex = OutputPorts.IndexOf(port);
-            _outputExtensions.RemoveAt(portIndex);
-            _graph.DeleteElements(port.connections);
-            outputContainer.Remove(port);
-            OutputPorts.Remove(port);
-            RefreshPortIds();
-        }
-
-        public void RefreshPortIds()
-        {
-            if (_context.OutputType != PortType.Custom) return;
-            for (var i = 0; i < OutputPorts.Count; i++)
-            {
-                var port = OutputPorts[i];
-                port.portName = "Out " + (i + 1);
-                port.SetID($"out_{i+1}");
-            }
         }
     }
 }
