@@ -22,11 +22,11 @@ namespace IRG.Graphs
         public bool IsDone { get; private set; }
         private string _outPortId;
         
-        public void Reset()
+        public void Reset(string outPortId = null)
         {
             IsActive = false;
             IsDone = false;
-            _outPortId = "next";
+            _outPortId = outPortId;
             _readyNodes = 0;
             _requiredNodes = 0;
             _nextNodes.Clear();
@@ -77,10 +77,10 @@ namespace IRG.Graphs
             }
         }
 
-        protected void SetDone(string outNode = null)
+        protected void SetDone(string outNode = "next")
         {
             IsDone = true;
-            if(!string.IsNullOrEmpty(outNode)) _outPortId = outNode;
+            _outPortId = outNode;
         }
     }
 }

@@ -97,7 +97,7 @@ namespace IRG.Graphs
         {
             if (!_currentGraph) return;
             
-            _initialNode.Reset();
+            _initialNode.Reset("next");
             
             foreach (var nodeAction in _nodes.Values)
             {
