@@ -389,13 +389,11 @@ namespace IRG.Graphs.Editor
         
         public void Refresh()
         {
-            //TODO: Implement this in a way that doesnt break.
-            return;
             foreach (var graphElement in graphElements)
             {
                 if (graphElement is GraphNode graphNode)
                 {
-                    graphNode.Draw();
+                    graphNode.OnDraw();
                 }
             }
         }

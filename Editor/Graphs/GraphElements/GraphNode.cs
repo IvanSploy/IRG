@@ -15,7 +15,7 @@ namespace IRG.Graphs.Editor
         private int _inputCount;
         private int _outputCount;
 
-        private struct PortElement
+        private struct PortExtension
         {
             public VisualElement Extension;
             public Button Remove;
@@ -25,9 +25,9 @@ namespace IRG.Graphs.Editor
         public bool IsInitialNode => ID == "initial_node";
         public GraphGroup Group { get; set; }
         public List<Port> InputPorts { get; } = new();
-        private readonly List<PortElement> _inputExtensions = new();
+        private readonly List<PortExtension> _inputExtensions = new();
         public List<Port> OutputPorts { get; } = new();
-        private readonly List<PortElement> _outputExtensions = new();
+        private readonly List<PortExtension> _outputExtensions = new();
 
         private Label _title;
         
@@ -152,16 +152,14 @@ namespace IRG.Graphs.Editor
                 outputContainer.Add(addChoiceButton);
             }
 
-            OnDrawData();
-            
-            RefreshExpandedState();
+            OnDraw();
         }
 
-        private void OnDrawData()
+        public void OnDraw()
         {
             if (_data == null) return;
             
-            extensionContainer.Clear();
+            Clear();
             
             var dataVe = _data.OnDraw();
             
@@ -223,6 +221,8 @@ namespace IRG.Graphs.Editor
                 extensionContainer.Add(dataVe);
                 _data.OnRefresh(dataVe);
             }
+            
+            RefreshExpandedState();
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -279,7 +279,7 @@ namespace IRG.Graphs.Editor
         
         private void AddInputPort(string portName = null)
         {
-            var portElement = new PortElement();
+            var portElement = new PortExtension();
             
             portName = string.IsNullOrEmpty(portName) ? $"In {_inputCount + 1}" : portName;
             string portId = portName.ToSnakeCase();
@@ -333,7 +333,7 @@ namespace IRG.Graphs.Editor
         
         private void AddOutputPort(string portName = null)
         {
-            var portElement = new PortElement();
+            var portElement = new PortExtension();
             
             portName = string.IsNullOrEmpty(portName) ? $"Out {_outputCount + 1}" : portName;
             string portId = portName.ToSnakeCase();
@@ -477,6 +477,26 @@ namespace IRG.Graphs.Editor
                 }
             }
             _graph.DeleteElements(edges);
+        }
+
+        public new void Clear()
+        {
+            foreach (var input in _inputExtensions)
+            {
+                input.Extension.Clear();
+            }
+
+            foreach (var output in _outputExtensions)
+            {
+                output.Extension.Clear();
+            }
+            
+            extensionContainer.Clear();
+        }
+
+        public void ClearAll()
+        {
+            base.Clear();
         }
     }
 }
