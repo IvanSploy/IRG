@@ -492,6 +492,11 @@ namespace IRG.Graphs.Editor
             }
             
             extensionContainer.Clear();
+            
+            OnInputAdd = null;
+            OnInputRemove = null;
+            OnOutputAdd = null;
+            OnOutputRemove = null;
         }
 
         public void ClearAll()
