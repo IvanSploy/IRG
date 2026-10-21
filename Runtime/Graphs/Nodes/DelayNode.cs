@@ -9,7 +9,7 @@ namespace IRG.Graphs
         public float Delay;
     }
     
-    public class DelayAction : NodeAction<DelayData>
+    public class Delay : Node<DelayData>
     {
         private float _timer;
 

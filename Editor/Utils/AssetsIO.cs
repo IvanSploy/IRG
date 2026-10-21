@@ -103,6 +103,13 @@ namespace IRG.Editor
             Refresh();
         }
         
+        public static void RenameAsset(Object asset, string newName)
+        {
+            string path = AssetDatabase.GetAssetPath(asset);
+            AssetDatabase.RenameAsset(path, newName);
+            Refresh();
+        }
+        
         public static void Remove(string path)
         {
             AssetDatabase.DeleteAsset(GetAssetPath(path));

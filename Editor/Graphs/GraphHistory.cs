@@ -16,10 +16,20 @@ namespace IRG.Graphs.Editor
         public GraphHistory()
         {
             style.backgroundColor = Color.gray2;
+
+            var label = new Label("History");
+            label.style.paddingLeft = 10f;
+            label.style.paddingRight = 10f;
+            label.style.paddingTop = 5f;
+            label.style.paddingBottom = 5f;
+            label.style.backgroundColor = Color.gray1;
+            label.style.unityTextAlign = TextAnchor.MiddleCenter;
+            Add(label);
+            
             _redoList = new ListView
             {
                 showAlternatingRowBackgrounds = AlternatingRowBackground.All,
-                selectionType = SelectionType.None
+                selectionType = SelectionType.None,
             };
             Add(_redoList);
             

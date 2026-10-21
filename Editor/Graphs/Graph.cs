@@ -49,10 +49,21 @@ namespace IRG.Graphs.Editor
         private Vector2 _mousePos;
         private EditorWindow _windowContext;
 
-        public bool IsDirty => UndoStack.Count != 0;
+        private bool _isDirty;
+        public bool IsDirty
+        {
+            get => _isDirty;
+            set
+            {
+                if (_isDirty == value) return;
+                _isDirty = value;
+                OnDirtyRefresh?.Invoke(_isDirty);
+            }
+        }
+        public event Action<bool> OnDirtyRefresh;
 
         public override VisualElement contentContainer => this;
-
+        
         public Graph()
         {
             _initialNode = CreateInitialNode();
@@ -375,35 +386,21 @@ namespace IRG.Graphs.Editor
         {
             base.Clear();
         }
+        
+        public void Refresh()
+        {
+            //TODO: Implement this in a way that doesnt break.
+            return;
+            foreach (var graphElement in graphElements)
+            {
+                if (graphElement is GraphNode graphNode)
+                {
+                    graphNode.Draw();
+                }
+            }
+        }
 
         #region Serialization
-
-        public string CreateNew(string folder)
-        {
-            return AssetsIO.Create<GraphData>(folder).name;
-        }
-
-        public bool Load(string folder, string fileName)
-        {
-            if (string.IsNullOrEmpty(fileName)) 
-                throw new ArgumentNullException(nameof(fileName));
-            
-            GraphData graphData = AssetsIO.Load<GraphData>(AssetsIO.Combine(folder, fileName));
-            if (!graphData)
-            {
-                EditorUtility.DisplayDialog(
-                    "Could not find the file!",
-                    "The file at the following path could not be found:\n\n" +
-                    $"\"Assets/{folder}/{fileName}\".\n\n" +
-                    "Make sure you chose the right file and it's placed at the folder path mentioned above.",
-                    "Okay"
-                );
-                return false;
-            }
-
-            Load(graphData);
-            return true;
-        }
 
         private bool _failed;
         public void Load(GraphData graphData)
@@ -424,22 +421,13 @@ namespace IRG.Graphs.Editor
             }
         }
 
-        public void Save(string folder, string fileName)
-        {
-            if (string.IsNullOrEmpty(fileName)) 
-                throw new ArgumentNullException(nameof(fileName));
-            
-            string path = AssetsIO.Combine(folder, fileName);
-            var graph = AssetsIO.LoadOrCreate<GraphData>(path);
-            Save(graph);
-        }
-
         public void Save(GraphData graphData)
         {
             if(_failed) return;
             Serialize();
             graphData.CopyFrom(_graphData);
             AssetsIO.Save(graphData);
+            IsDirty = false;
         }
 
         private void Serialize()
@@ -626,6 +614,7 @@ namespace IRG.Graphs.Editor
             UndoStack.Clear();
             RedoStack.Clear();
             RefreshUndoRedoHistory();
+            IsDirty = false;
         }
         
         private void RefreshState()
@@ -652,6 +641,7 @@ namespace IRG.Graphs.Editor
             }
             
             GraphHistory.Rebuild();
+            IsDirty = true;
         }
 
         #endregion

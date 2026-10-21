@@ -254,6 +254,8 @@ namespace IRG.Graphs.Editor
         
         public Port GetInputPort(string portID)
         {
+            if (string.IsNullOrEmpty(portID)) portID = "in";
+            
             foreach (var port in InputPorts)
             {
                 if (port.GetID() == portID) return port;
@@ -264,12 +266,8 @@ namespace IRG.Graphs.Editor
         
         public Port GetOutputPort(string portID)
         {
-            foreach (var port in OutputPorts)
-            {
-                if (port.GetID() == portID) return port;
-            }
-
-            portID = portID.Replace("choice_", "out_");
+            if (string.IsNullOrEmpty(portID)) portID = "next";
+            else portID = portID.Replace("choice_", "out_");
             
             foreach (var port in OutputPorts)
             {

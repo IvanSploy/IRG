@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -30,26 +29,24 @@ namespace IRG.Graphs.Editor
             types.Sort((item1, item2) =>
                 String.Compare(item1.Name, item2.Name, StringComparison.InvariantCulture));
 
-            //TODO: Sort by group name also to improve the visibility.
             Dictionary<string, List<Type>> groups = new();
             foreach (var type in types)
             {
                 if(type == typeof(InitialNodeData)) continue;
 
-                string filter = "";
-                string group = "";
-                var graphNodeAttr = type.GetCustomAttribute<NodeAttribute>();
-                if (graphNodeAttr == null)
+                var ctx = NodeContext.Get(type);
+                
+                if (string.IsNullOrEmpty(ctx.Filter) && string.IsNullOrEmpty(ctx.Group))
                 {
                     groups.AddToList("", type);
                     continue;
                 }
                 
-                if (!string.IsNullOrEmpty(_filter) && !string.IsNullOrEmpty(graphNodeAttr.Filter) 
-                                                   && graphNodeAttr.Filter != _filter)
+                if (!string.IsNullOrEmpty(_filter) && !string.IsNullOrEmpty(ctx.Filter) 
+                                                   && !ctx.Filter.Equals(_filter, StringComparison.InvariantCultureIgnoreCase))
                     continue;
 
-                string groupName = string.IsNullOrEmpty(graphNodeAttr.Group) ? "" : graphNodeAttr.Group;
+                string groupName = string.IsNullOrEmpty(ctx.Group) ? "" : ctx.Group;
                 groups.AddToList(groupName, type);
             }
 
@@ -59,10 +56,13 @@ namespace IRG.Graphs.Editor
             {
                 new SearchTreeGroupEntry(new GUIContent($"{filterName} Nodes")),
             };
+            
+            var sortedGroupNames = groups.Keys.ToList();
+            sortedGroupNames.Sort((item1, item2) => String.Compare(item1, item2, StringComparison.InvariantCulture));
 
-            foreach (var group in groups)
+            foreach (var key in sortedGroupNames)
             {
-                entries.AddRange(CreateEntries(group.Key, group.Value, 2));
+                entries.AddRange(CreateEntries(key, groups[key], 2));
             }
             return entries;
         }
@@ -76,7 +76,8 @@ namespace IRG.Graphs.Editor
             
             foreach (var type in types)
             {
-                entries.Add(new SearchTreeEntry(new GUIContent($"     {type.Name.WithSpaces()}"))
+                var ctx = NodeContext.Get(type);
+                entries.Add(new SearchTreeEntry(new GUIContent($"     {ctx.Title}"))
                 {
                     userData = type,
                     level = level

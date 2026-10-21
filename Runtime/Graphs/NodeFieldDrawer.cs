@@ -15,7 +15,7 @@ namespace IRG.Graphs
         private IList _list;
         private int _index;
         
-        protected internal readonly List<NodeFieldDrawer> _indexedDrawers = new();
+        protected readonly List<NodeFieldDrawer> _indexedDrawers = new();
         protected internal void SetIndex(int index) => _index = index;
 
         public bool IsIndexed => _list != null;

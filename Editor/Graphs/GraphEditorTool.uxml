@@ -1,6 +1,15 @@
-<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <Style src="project://database/Packages/com.irg.utils/Runtime/Resources/ToolStyle.uss?fileID=7433441132597879392&amp;guid=797c302f8298e8746a481558d0a77977&amp;type=3#ToolStyle"/>
     <ui:VisualElement style="flex-grow: 1; top: 0; left: 0; bottom: 0; right: 0; position: absolute; background-color: rgb(50, 50, 50);">
+        <uie:Toolbar name="ToolBar" style="height: 26px; flex-direction: row; justify-content: space-between;">
+            <IRG.LabelEditable value="Title" name="Title"/>
+            <ui:VisualElement name="RightContainer" style="flex-grow: 1; flex-direction: row-reverse;">
+                <uie:ToolbarToggle label="Show History" name="ShowHistory" value="false" style="width: 90px;"/>
+                <uie:ToolbarToggle label="Auto Save" name="AutoSave" value="false" style="flex-shrink: 1; width: 75px;"/>
+                <uie:ToolbarButton text="Save" double-click-selects-word="false" triple-click-selects-line="false" name="Save" style="margin-right: 10px; padding-left: 10px; padding-right: 10px;"/>
+                <uie:ToolbarButton text="Refresh" double-click-selects-word="false" triple-click-selects-line="false" name="Refresh" style="margin-right: -1px; padding-right: 10px; padding-left: 10px;"/>
+            </ui:VisualElement>
+        </uie:Toolbar>
         <IRG.Graphs.Editor.Graph show-undo-redo-history="true"/>
     </ui:VisualElement>
 </ui:UXML>

@@ -10,6 +10,8 @@ namespace IRG.Graphs
     public struct NodeContext
     {
         public string Title;
+        public string Filter;
+        public string Group;
         public PortType InputType;
         public List<string> InputIds;
         public PortType OutputType;
@@ -24,6 +26,8 @@ namespace IRG.Graphs
             NodeContext context = new NodeContext
             {
                 Title = "",
+                Filter = "",
+                Group = "",
                 InputType = PortType.Fixed,
                 InputIds = new List<string>() { "In" },
                 OutputType = PortType.Fixed,
@@ -58,6 +62,8 @@ namespace IRG.Graphs
             {
                 var attr = type.GetCustomAttribute<NodeAttribute>();
                 if(!string.IsNullOrEmpty(attr.Title)) context.Title = attr.Title;
+                context.Filter = attr.Filter;
+                context.Group = attr.Group;
                 context.HeaderColor = GetColor(attr.Color);
                 context.OutputType = attr.OutputPortType;
             }
@@ -66,7 +72,11 @@ namespace IRG.Graphs
 
         private static Color GetColor(string colorName, Color defaultColor = default)
         {
-            if (string.IsNullOrEmpty(colorName)) return defaultColor;
+            if (string.IsNullOrEmpty(colorName))
+            {
+                defaultColor.a = 1f;
+                return defaultColor;
+            }
             PropertyInfo property = typeof(Color).GetProperty(colorName, BindingFlags.Public | BindingFlags.Static);
 
             if (property != null && property.PropertyType == typeof(Color))

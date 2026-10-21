@@ -25,7 +25,7 @@ namespace IRG.Graphs
         public RectInt RectIntField;
     }
     
-    public class TestAction : NodeAction<TestData>
+    public class Test : Node<TestData>
     {
         public override void OnStart()
         {

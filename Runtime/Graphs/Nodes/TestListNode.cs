@@ -32,7 +32,7 @@ namespace IRG.Graphs
         public List<TestClassObject> ListObjectField;
     }
     
-    public class TestListAction : NodeAction<TestListData>
+    public class TestList : Node<TestListData>
     {
         public override void OnStart()
         {

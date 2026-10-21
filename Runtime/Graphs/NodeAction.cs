@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace IRG.Graphs
 {
-    public abstract class NodeAction<TData> : NodeAction where TData : NodeData
+    public abstract class Node<TData> : NodeAction where TData : NodeData
     {
         protected TData Data;
 
